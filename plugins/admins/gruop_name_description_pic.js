@@ -2,19 +2,19 @@ const handler = async (m, { conn, text, command }) => {
     if (!m.isGroup) return m.reply('❌ الأمر ده للجروبات بس');
 
     const actions = {
-        'جروب_اسم': async () => {
+        'اسم الجروب': async () => {
             if (!text) return m.reply('✏️ ~ اكتب الاسم الجديد');
             await conn.groupUpdateSubject(m.chat, text);
             m.reply('✅ ~ تم تغيير اسم الجروب');
         },
 
-        'جروب_وصف': async () => {
+        'وصف الجروب': async () => {
             if (!text) return m.reply('📝 ~ اكتب الوصف الجديد');
             await conn.groupUpdateDescription(m.chat, text);
             m.reply('✅ ~ تم تغيير وصف الجروب');
         },
 
-        'جروب_صوره': async () => {
+        'صورة الجروب': async () => {
             const q = m.quoted || m;
             const mime = q.mimetype || '';
 

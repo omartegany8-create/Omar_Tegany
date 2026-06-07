@@ -5,18 +5,12 @@ import sub from './sub.js';
 
 /* =========== Client ========== */
 const client = new Client({
-  phoneNumber: '201158601817', // Bot number
+  phoneNumber: '201031044377', // Bot number
   prefix: [".", "/", "!"],
   fromMe: false, 
   owners: [
   // Owner 1
-    { name: "VA", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
-  // Owner 2
-    { name: "emam", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
-  // Owner 3
-    { name: "Sukuna", jid: "201033024135@s.whatsapp.net", lid: "50414477168824@lid" },
-  // Owner 4 
-   { name: "عمورتي", jid: "201050079089@s.whatsapp.net", lid: "51664513925368@lid" }
+    { name: "Omar", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
   ],
   settings: { noWelcome: false },
   commandsPath: './plugins'
@@ -33,17 +27,17 @@ if (!global.db) {
 /* =========== Config ========== */
 const { config } = client;
 config.info = { 
-  nameBot: "♡ YUJI 🎪 〈", 
-  nameChannel: "𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️", 
-  idChannel: "120363225356834044@newsletter",
+  nameBot: "𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️〈", 
+  nameChannel: "𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️", 
+  idChannel: "",
   urls: {
-    repo: "https://github.com/deveni0/Pomni-AI",
-    api: "https://emam-api.web.id",
-    channel: "https://whatsapp.com/channel/0029VaQim2bAu3aPsRVaDq3v"
+    repo: "https://github.com/omartegany8-create/Omar_Tegany",
+    api: "",
+    channel: ""
   },
   copyright: { 
-    pack: 'ڤـ ـ VA ـ ـا', 
-    author: 'VA'
+    pack: '𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️', 
+    author: '𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️'
   },
   images: [
     "https://i.pinimg.com/originals/11/26/97/11269786cdb625c60213212aa66273a9.png",

@@ -1,25 +1,28 @@
 const run = async (m, { args, conn, bot }) => {
-/*
-if (subBots.list().length >= 30) {
-  return m.reply("خلاص العدد اكتمل");
-} // عدد البوتات الي مسموح ب ربطهم فقط
+  /*
+  if (subBots.list().length >= 30) {
+    return m.reply("خلاص العدد اكتمل");
+  } // عدد البوتات المسموح بربطها فقط
+  */
 
-*/
-  if (global.db.noSub) return m.reply("المطور قافل التنصيب")
+  if (global.db.noSub) return m.reply("🕷️ المطور أغلق ميزة التنصيب حالياً.");
+  
   try {
+    // 📱 تنظيف واستخراج رقم الهاتف للشخص اللي طلب التنصيب
     const num = m.sender.split("@")[0].replace(/[+\s-]/g, '');
 
-    if (!/^\d+$/.test(num)) return m.reply("⚠️ رقم الهاتف غير صالح");
+    if (!/^\d+$/.test(num)) return m.reply("🕷️ رقم الهاتف غير صالح.");
 
     const sub = global.subBots;
-    if (!sub) return m.reply("❌ نظام البوتات الفرعية غير متاح");
+    if (!sub) return m.reply("❌ نظام البوتات الفرعية غير متاح في السورس حالياً.");
 
-    const init = await m.reply(`⏳ جاري تنصيب بوت للرقم *${num}*...`);
+    // ⏳ رسالة بدء التجهيز
+    const init = await m.reply(`⏳ جاري بدء تنصيب نسخة *𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️* للرقم: *${num}*...`);
 
     const state = { uid: null, pairDone: false, resolved: false, pending: null };
-
     const { images: img } = bot.config.info;
 
+    // 🧹 دالة تنظيف المستمعين (Listeners) بعد انتهاء العملية لتفادي ثقل السيرفر
     const cleanup = () => {
       sub.off('pair', handlers.pair);
       sub.off('ready', handlers.ready);
@@ -27,6 +30,7 @@ if (subBots.list().length >= 30) {
     };
 
     const handlers = {
+      // 🔑 التعامل مع كود الاقتران عند صدوره
       pair: (id, code) => {
         if (state.pairDone) return;
         if (!state.uid) { 
@@ -37,12 +41,14 @@ if (subBots.list().length >= 30) {
         state.pairDone = true;
         Func.pair(conn, code, num, m, init);
       },
+      // ✅ التعامل مع نجاح الاتصال بالواتساب
       ready: (id) => {
         if (id !== state.uid || state.resolved) return;
         state.resolved = true;
         Func.ready(conn, num, m, img[Math.floor(Math.random() * img.length)]);
         cleanup();
       },
+      // ❌ التعامل مع حدوث خطأ أثناء الربط
       error: (id, err) => {
         if (id !== state.uid || state.resolved) return;
         state.resolved = true;
@@ -51,10 +57,12 @@ if (subBots.list().length >= 30) {
       },
     };
 
+    // تفعيل مستمعين الأحداث للنظام الفرعي
     sub.on('pair', handlers.pair);
     sub.on('ready', handlers.ready);
     sub.on('error', handlers.error);
 
+    // توليد المعرف الخاص برقم المستخدم لبدء جلسة الربط
     state.uid = await sub.add(num);
 
     if (state.pending?.id === state.uid && !state.pairDone) {
@@ -62,6 +70,7 @@ if (subBots.list().length >= 30) {
       Func.pair(conn, state.pending.code, num, m, init);
     }
 
+    // ⏰ مهلة إنهاء العملية التلقائية بعد 120 ثانية لو الحساب ماربطش
     setTimeout(() => {
       if (state.resolved) return;
       state.resolved = true;
@@ -70,57 +79,56 @@ if (subBots.list().length >= 30) {
     }, 120000);
 
   } catch (error) {
-    await m.reply(error.message);
+    await m.reply(`⚠️ حدث خطأ غير متوقع: ${error.message}`);
   }
 };
 
-run.command = ["تنصيب"];
-run.noSub = true;
-run.usage =  ["تنصيب"];
+// ⚙️ إعدادات تشغيل الأمر
+run.command = ["تنصيب", "ربط"];
+run.noSub = true; // منع استخدام الأمر من داخل بوت فرعي (يستخدم من الأساسي فقط)
+run.usage = ["تنصيب"];
 run.category = "sub";
+
 export default run;
 
-
-
+// 🛠️ دالات العرض والواجهات الرائعة للأمر
 const Func = {
+  // 🔐 واجهة إرسال كود الاقتران (أزرار تفاعلية فخمة)
   pair: async (conn, code, num, m, reply_status) => {
     await conn.sendButton(m.chat, {
       imageUrl: "https://i.pinimg.com/736x/20/c1/cd/20c1cd046c862caa5a42e07d00042357.jpg",
-      bodyText: `🔐⤿ نـظـام الـبـوتـات الـفـرعـيـه 𑁍
-⊱⋅ ──────────── ⋅⊰
-📱 — الرقم: ${num}
-🔑 — الكود: ${code}
-⊱⋅ ──────────── ⋅⊰
-> *_افتح واتساب > الأجهزة المرتبطة > ربط جهاز برقم الهاتف > أدخل الكود_*`,
-      footerText: "@𝑺𝒚𝒔𝒕𝒆𝒎_𝑺𝒖𝒃𝑩𝒐𝒕𝒔_𝑽𝑰𝑰",
+      bodyText: `🕸️⤿ *𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 - 𝐒𝐮𝐛-𝐁𝐨𝐭 𝐒𝐲𝐬𝐭𝐞𝐦* 🕷️\n\n⚡ _أهلاً بك في نظام التنصيب الفرعي  𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️._\n\n📱 *الرقم المُراد ربطه:* ${num}\n🔑 *كود الاقتران الخاص بك:* \`\`\`${code}\`\`\`\n\n📋 *طريقة التفعيل:*\n1️⃣ افتح تطبيق الواتساب الخاص بك.\n2️⃣ انتقل إلى *الأجهزة المرتبطة* -> *ربط جهاز*.\n3️⃣ اختر *الربط برقم الهاتف* ثم أدخل الكود الموضح أعلاه.`,
+      footerText: "© 2026 𝑴𝑬𝑹𝑶 𝑨𝑰 - Powered by Shibuya Network",
       buttons: [
-        { name: "cta_copy", params: { display_text: "⟨🎪| 𝐂𝐨𝐩𝐲 𝐂𝐨𝐝𝐞 |🎪⟩", copy_code: code } },
-        { name: "cta_url", params: { display_text: "⟨🫒| 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 𝐕𝐀 |🫒⟩", url: "https://google.com" } },
+        { name: "cta_copy", params: { display_text: "📋 نسخ كود الربط", copy_code: code } },
+        { name: "cta_url", params: { display_text: "📢 قناة البوت الرسمية", url: "https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y" } },
       ],
       mentions: [m.sender],
+      // ربط الكارت التفاعلي التلقائي بقناتك فوق الرسالة
       newsletter: {
-        name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
-        jid: '120363225356834044@newsletter'
+        name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎',
+        jid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter'
       },
       interactiveConfig: {
         buttons_limits: 10,
-        list_title: "@𝑺𝒚𝒔𝒕𝒆𝒎_𝑺𝒖𝒃𝑩𝒐𝒕𝒔_𝑽𝑰𝑰",
-        button_title: "Click Here",
-        canonical_url: `https://code.com/${code}`
+        list_title: "𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪",
+        button_title: "خيارات الربط",
+        canonical_url: `https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y`
       }
     }, global.reply_status);
   },
 
+  // ✅ واجهة الاتصال بنجاح والتفعيل
   ready: async (conn, num, m, img) => {
-    await m.react("✅");
+    await m.react("🕷️");
     await conn.sendMessage(m.chat, {
-      text: `✅ — *تـم الاتـصـال بـنـجـاح*\n\n📱 الرقم: ${num}\n> *البوت جاهز للاستخدام الآن*`,
+      text: `🎉 *تـم الـتـنـصـيـب بـنـجـاح!* ✨\n\n📱 *الرقم:* ${num}\n🚀 البوت يعمل الآن كنسخة فرعية ومستقر تماماً.\n\n> اكتب *.اوامر* من حسابك لاستكشاف الميزات!`,
       contextInfo: {
         externalAdReply: {
-          title: "𝐏𝐎𝐌𝐍𝐈-𝐀𝐈 🎪 | 𝐁𝐨𝐭 𝐢𝐬 𝐛𝐮𝐢𝐥𝐭 𝐨𝐧 𝐭𝐡𝐞 𝐖𝐒/𝐕𝐈𝐈 𝐟𝐫𝐚𝐦𝐞𝐰𝐨𝐫𝐤",
-          body: "𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝚋𝚘𝚝 𝚝𝚑𝚊𝚝 𝚒𝚜 𝚎𝚊𝚜𝚢 𝚝𝚘 𝚖𝚘𝚍𝚒𝚏𝚢 𝚊𝚗𝚍 𝚟𝚎𝚛𝚢 𝚏𝚊𝚜𝚝",
+          title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️ | Sub-Bot Live",
+          body: "Your personal bot instance is ready and fully synchronized.",
           thumbnailUrl: img,
-          sourceUrl: '',
+          sourceUrl: 'https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y',
           mediaType: 1,
           renderLargerThumbnail: true
         }
@@ -128,14 +136,17 @@ const Func = {
     });
   },
 
+  // ❌ واجهة الفشل
   error: async (conn, num, err, m) => {
-    await m.reply(`❌ *فشل الاقتران!*\n\n📱 الرقم: ${num}\n⚠️ الخطأ: ${err?.message || 'غير معروف'}`);
+    await m.react("❌");
+    await m.reply(`❌ *فشل عملية الاقتران!*\n\n📱 *الرقم:* ${num}\n⚠️ *السبب:* ${err?.message || 'انتهت الجلسة أو تم إلغاء الاتصال من الهاتف.'}`);
   },
 
+  // ⏰ واجهة انتهاء المهلة
   timeout: async (conn, m, pairDone) => {
     await m.reply(pairDone
-      ? `⏰ تم إرسال الكود لكن لم يتم تأكيد الاتصال.\nتأكد من إدخال الكود في واتساب.`
-      : `⏰ لم يتم استلام كود الاقتران خلال 120 ثانية.\nالرجاء المحاولة مرة أخرى.`
+      ? `⏰ *انتهت المهلة:* تم إرسال الكود للواتساب ولكن لم يتم تأكيد الربط من داخل الهاتف. يرجى إعادة المحاولة.`
+      : `⏰ *انتهت المهلة:* لم يقم السيرفر بتوليد كود اقتران خلال 120 ثانية. يرجى كتابة الأمر مجدداً.`
     );
   }
 };

@@ -1,40 +1,53 @@
-let handler = async (m, {
-    conn,
-    bot
-}) => {
-const context = (jid, img) => ({
-    mentionedJid: [jid],
-    isForwarded: true,
-    forwardingScore: 1,
-    forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363225356834044@newsletter',
-        newsletterName: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
-        serverMessageId: 0
-    },
-    externalAdReply: {
-        title: "𝐏𝐎𝐌𝐍𝐈-𝐀𝐈 🎪 | 𝐁𝐨𝐭 𝐢𝐬 𝐛𝐮𝐢𝐥𝐭 𝐨𝐧 𝐭𝐡𝐞 𝐖𝐒/𝐕𝐈𝐈 𝐟𝐫𝐚𝐦𝐞𝐰𝐨𝐫𝐤",
-        body: "𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝚋𝚘𝚝 𝚝𝚑𝚊𝚝 𝚒𝚜 𝚎𝚊𝚜𝚢 𝚝𝚘 𝚖𝚘𝚍𝚒𝚏𝚢 𝚊𝚗𝚍 𝚟𝚎𝚛𝚢 𝚏𝚊𝚜𝚝",
-        thumbnailUrl: img,
-        sourceUrl: '',
-        mediaType: 1,
-        renderLargerThumbnail: true
-    }
-});
-const { images } = bot.config.info;
-const img = images.random()
-await conn.sendMessage(m.chat, { 
-  text: `
-GitHub: _*https://github.com/deveni0/Pomni-AI/tree/main*_
+let handler = async (m, { conn, bot }) => {
 
-Video: _*https://youtu.be/hA5aCpvesJE?si=pHAEsbDFTVXe2_sq*_
+    // 🛠️ دالة مخصصة لإنشاء كارت الحقوق والتوجيه التفاعلي (Context Info)
+    const context = (jid, img) => ({
+        mentionedJid: [jid], // عمل منشن للشخص اللي كتب الأمر
+        isForwarded: true, // إظهار الرسالة كأنها محولة لإعطائها مظهر احترافي
+        forwardingScore: 1, 
+        
+        // 🔗 ربط الكارت بقناة الواتساب بتاعتك بشكل رسمي
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter', // آيدي قناتك المبرمج
+            newsletterName: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎', // اسم قناتك اللي هيظهر فوق الكارت
+            serverMessageId: 0
+        },
+        
+        // 🖼️ إعدادات الإعلان الخارجي (الكارت التفاعلي اللي بيظهر تحت الرسالة)
+        externalAdReply: {
+            title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️ | WhatsApp Bot", // العنوان الرئيسي للكارت
+            body: "Advanced WhatsApp bot, customized and maintained by Omar Tegany", // الوصف المصغر
+            thumbnailUrl: img, // الصورة العشوائية اللي البوت هيختارها
+            sourceUrl: 'https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y', // رابط قناتك لو حد داس على الكارت يروح ليها
+            mediaType: 1,
+            renderLargerThumbnail: true // جعل الصورة تظهر بحجم كبير وفخم
+        }
+    });
 
-> *لا تنسي وضع نجمة لـ الريبو 🌟*
+    // 📸 سحب مصفوفة الصور العشوائية من إعدادات البوت الأساسية واختيار واحدة
+    const { images } = bot.config.info;
+    const img = images.random();
+
+    // ✉️ إرسال رسالة السورس مع تطبيق الكارت التفاعلي المخصص فوقها
+    await conn.sendMessage(m.chat, { 
+      text: `
+🤖 *𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 - 𝐒𝐨𝐮𝐫𝐜𝐞 𝐂𝐨𝐝𝐞* 🕷️
+
+🌐 *GitHub Repo:*
+_*https://github.com/omar-tegany9/Omar_Tegany*_
+
+📢 *Official Channel:*
+_*https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y*_
+
+> *لا تنسى وضع نجمة للمستودع لدعم المطور 🌟*
 `,
-  contextInfo: context(m.sender, img)
-}, { quoted: reply_status });
+      contextInfo: context(m.sender, img) // تطبيق الكارت التفاعلي هنا
+    }, { quoted: m }); // الرد المباشر على رسالة المستخدم (تم استبدال reply_status المتغيرة بـ m الأضمن)
 }
-handler.usage = ["سكريبت"];
-handler.category = "group";
-handler.command = ["سكريبت", "سورس", "sc"];
+
+// ⚙️ إعدادات تشغيل الأمر والكلمات المفتاحية
+handler.usage = ["سكريبت"]; // طريقة الاستخدام
+handler.category = "group"; // قسم الأمر (جروب)
+handler.command = ["سكريبت", "سورس", "sc"]; // الكلمات التي يستجيب لها البوت
 
 export default handler;

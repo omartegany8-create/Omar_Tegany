@@ -18,19 +18,19 @@ let control = async (m, { command, text, conn, bot, participants }) => {
             if (!text) return m.reply("*فين الرقم؟*");
             if (m.quoted) {
                 await conn.groupParticipantsUpdate(m.chat, [m.quoted.sender], 'add');
-                return m.reply("*✅ تمت الإضافة*");
+                return m.reply("*🕷️ تمت الإضافة*");
             }
             if (m.mentionedJid && m.mentionedJid.length > 0) {
                 await conn.groupParticipantsUpdate(m.chat, [m.mentionedJid[0]], 'add');
-                return m.reply("*✅ تمت الإضافة*");
+                return m.reply("*🕷️ تمت الإضافة*");
             }
             await conn.groupParticipantsUpdate(m.chat, [text + "@s.whatsapp.net"], 'add');
-            return m.reply("*✅ تمت الإضافة*");
+            return m.reply("*🕷️ تمت الإضافة*");
         }
         
         if (command === "طرد") {
             let user = getUser();
-            if (!user) return m.reply("*! منشن أو رد على العضو*");
+            if (!user) return m.reply("*🕷️ منشن أو رد على العضو*");
             
             if (isBotOwner(user) || user === conn.user.id) {
                 m.reply("بتهزر ؟");
@@ -38,21 +38,21 @@ let control = async (m, { command, text, conn, bot, participants }) => {
             }
             
             await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
-            return m.reply("*✅ تم الطرد*");
+            return m.reply("*🕷️ تم الطرد*");
         }
         
         if (command === "رفع") {
             let user = getUser();
-            if (!user) return m.reply("*منشن أو رد على العضو*");
+            if (!user) return m.reply("*🕷️ منشن أو رد على العضو*");
             await conn.groupParticipantsUpdate(m.chat, [user], 'promote');
-            return m.reply("*✅ تم الرفع*");
+            return m.reply("*🕷️ تم الرفع*");
         }
         
         if (command === "خفض") {
             let user = getUser();
-            if (!user) return m.reply("*منشن أو رد على العضو*");
+            if (!user) return m.reply("*🕷️ منشن أو رد على العضو*");
             await conn.groupParticipantsUpdate(m.chat, [user], 'demote');
-            return m.reply("*✅ تم الخفض*");
+            return m.reply("*🕷️ تم الخفض*");
         }
         
     } catch (error) {

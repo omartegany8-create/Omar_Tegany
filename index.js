@@ -5,11 +5,11 @@ import sub from './sub.js';
 
 /* =========== Client ========== */
 const client = new Client({
-  phoneNumber: '201031044377', // Bot number
+  phoneNumber: '201031044377', // رقم البوت بدون مسافات
   prefix: [".", "/", "!"],
-  fromMe: false, 
+  fromMe: true, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [
-  // Owner 1
+    // المطور (عمر)
     { name: "Omar", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
   ],
   settings: { noWelcome: false },
@@ -27,17 +27,17 @@ if (!global.db) {
 /* =========== Config ========== */
 const { config } = client;
 config.info = { 
-  nameBot: "𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️〈", 
-  nameChannel: "𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️", 
-  idChannel: "",
+  nameBot: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎", 
+  nameChannel: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎", 
+  idChannel: "0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter", // 🔗 هنا حطينا الـ ID بتاع قناتك اللي طلعناه من الرابط
   urls: {
-    repo: "https://github.com/omartegany8-create/Omar_Tegany",
+    repo: "https://github.com/omar-tegany9/Omar_Tegany", // 🔗 تم تحديث مستودع الجيت هاب بتاعك أنت الشخصي
     api: "",
-    channel: ""
+    channel: "https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y" // 🔗 هنا حطينا رابط قناتك الرسمي اللي بعتهولي
   },
   copyright: { 
-    pack: '𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️', 
-    author: '𝑴𝑬𝑹𝑶 𝑨𝑰 🕷️'
+    pack: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️', 
+    author: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️'
   },
   images: [
     "https://i.pinimg.com/originals/11/26/97/11269786cdb625c60213212aa66273a9.png",
@@ -64,17 +64,3 @@ process.on('uncaughtException', (e) => {
 process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err)
 });
-
-
-/* 
-=========== Memory Monitor ========== 
-
-setInterval(() => {
-    const used = process.memoryUsage().rss / 1024 / 1024
-    if (used > 800) {
-        console.log(`🔄 Bot memory full (${used.toFixed(1)}MB), restarting...`)
-        process.exit(1) 
-    }
-}, 300_000) 
-
-*/

@@ -4,7 +4,7 @@ const CATEGORIES = [
     [1, 'التـحـمـيـل', 'downloads', '📂'],
     [2, 'الـمـجـمـوعـات', 'group', '🐞'],
     [3, 'الـمـلـصـقـات', 'sticker', '🌄'],
-    [4, 'الـمـطـوريـن', 'owner', '🇩🇪'],
+    [4, 'الـمـطـوريـن', 'owner', '👑'],
     [5, 'امـثـلـه', 'example', '✳️'],
     [6, 'الـادوات', 'tools', '🚀'],
     [7, 'الـبـحـث', 'search', '🌐'],
@@ -42,15 +42,15 @@ const context = (jid, img) => ({
     isForwarded: true,
     forwardingScore: 1,
     forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363225356834044@newsletter',
-        newsletterName: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
+        newsletterJid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter',
+        newsletterName: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
         serverMessageId: 0
     },
     externalAdReply: {
-        title: "𝐏𝐎𝐌𝐍𝐈-𝐀𝐈 🎪 | 𝐁𝐨𝐭 𝐢𝐬 𝐛𝐮𝐢𝐥𝐭 𝐨𝐧 𝐭𝐡𝐞 𝐖𝐒/𝐕𝐈𝐈 𝐟𝐫𝐚𝐦𝐞𝐰𝐨𝐫𝐤",
-        body: "𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝚋𝚘𝚝 𝚝𝚑𝚊𝚝 𝚒𝚜 𝚎𝚊𝚜𝚢 𝚝𝚘 𝚖𝚘𝚍𝚒𝚏𝚢 𝚊𝚗𝚍 𝚟𝚎𝚛𝚢 𝚏𝚊𝚜𝚝",
+        title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
+        body: "✮⃝🕸️𝑴𝑬𝑹𝑶 𝑨𝑰✮⃝🕷️",
         thumbnailUrl: img,
-        sourceUrl: '',
+        sourceUrl: 'https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y',
         mediaType: 1,
         renderLargerThumbnail: true
     }
@@ -72,9 +72,9 @@ const menu = async (m, { conn, bot }) => {
     const txt = `
 رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ
 وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِّلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَّحِيمٌ
-╭─┈─┈─┈─⟞🎪⟝─┈─┈─┈─╮
+╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮
 ${CATEGORIES.map(c => `┃ ⌯︙${c[0]} ~ *قـسـم ${c[1]} ${c[3]}*`).join('\n')}
-╰─┈─┈─┈─⟞🎪⟝─┈─┈─┈─╯
+╰─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╯
 > *رد عـلـي الـرسـالـه بـ رقـم الـقـسـم فـقـط بـدون نـقـطـه*`;
 
     const msg = await conn.sendMessage(m.chat, { 
@@ -117,7 +117,7 @@ menu.before = async (m, { conn, bot }) => {
 ${cmdsList}
 
 ╭─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╮
-┃ *⌯︙𝐕𝐈𝐈7 ~ ${bot.config.info.nameBot}*
+┃ *⌯︙𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}*
 ╰─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╯
 > *رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا*`.trim(),
         contextInfo: context(m.sender, getImg(bot))

@@ -46,7 +46,7 @@ async function sub(client) {
       if (body === "تست") {
     await sock.sendMessage(msg.key.
         remoteJid, {
-        react: { text: "✅", key: msg.key }
+        react: { text: "🕷️", key: msg.key }
        });
       }
 

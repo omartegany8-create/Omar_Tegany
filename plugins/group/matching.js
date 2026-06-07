@@ -8,14 +8,12 @@ const { data } = JSON.parse(res);
   mediaType: 'image', 
   caption: `# Boy 🚹`,
   buttons: [
-
-        { name: "cta_url", params: { display_text: "📎╎ قــنــاتــي ", url: "https://whatsapp.com/channel/0029Vb3UUKz3QxS3bgWmTc3x" } },
-
+        { name: "cta_url", params: { display_text: "📎╎ قــنــاتــي ", url: "https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y" } },
   ], 
   mentions: [m.sender],
   newsletter: {
-      name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
-      jid: '120363225356834044@newsletter'
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
+      jid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter'
     },
 }, global.reply_status)
 
@@ -26,14 +24,12 @@ return await conn.sendButtonNormal(m.chat, {
   mediaType: 'image', 
   caption: `# girl 🚺`,
   buttons: [
-
         { name: "quick_reply", params: { display_text: "▶️ ╎ الـتـالـي ", id: ".تطقيم" } },
-
   ], 
   mentions: [m.sender],
   newsletter: {
-      name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
-      jid: '120363225356834044@newsletter'
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
+      jid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter'
     },
 }, global.reply_status)
 

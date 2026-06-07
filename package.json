@@ -1,54 +1,33 @@
 {
-  // 📛 اسم المشروع البرمجي (يفضل الحروف تكون صغيرة وبدون مسافات في الخانة دي)
   "name": "mero-ai-bot",
-  
-  // 📌 رقم إصدار البوت الخاص بك
   "version": "2.0.0",
-  
-  // 📝 وصف مختصر يظهر في الجيت هاب يوضح إنك أنت المطور ومعدل السورس
   "description": "Advanced multi-functional WhatsApp bot, fully modified and customized by Omar Tegany",
-  
-  // 🚀 الملف الرئيسي اللي السيرفر بيشغله عشان البوت يفتح
   "main": "index.js",
-  
-  // 🌍 نوع نظام الاستيراد (ES Modules) اللي بيخليك تستخدم import بدل require
   "type": "module",
-  
-  // ⚙️ الأوامر اللي السيرفر (زي Render) بيستخدمها للتشغيل (npm start)
   "scripts": {
     "start": "node index.js"
   },
-  
-  // 🔍 الكلمات المفتاحية للمشروع على جيت هاب
   "keywords": [
     "whatsapp-bot",
     "mero-ai",
     "shibuya-network"
   ],
-  
-  // 👤 المالك والمطور الرسمي الحالي للبوت
   "author": "Omar Tegany",
-  
-  // 📜 نوع الرخصة البرمجية (مفتوح المصدر)
   "license": "MIT",
-  
-  // 📦 المكتبات والاعتمادات الخارجية اللي البوت محتاجها عشان يشتغل
   "dependencies": {
-    "meowsab": "https://github.com/deveni0/ws/tarball/main", // المكتبة الأساسية لتشغيل البوت
-    "sharp": "https://github.com/deveni0/sharp-tmx/tarball/main", // مكتبة معالجة الصور وعمل الاستيكرات
-    "cheerio": "1.0.0-rc.12", // لقراءة وتحليل بيانات المواقع (Sraping)
-    "chokidar": "^5.0.0", // لمراقبة الملفات وتحديث الأوامر تلقائياً بدون ريستارت
-    "file-type": "^18.0.0", // لتحديد نوع الملفات المرفوعة (صور، صوت، فيديو)
-    "form-data": "^4.0.5", // لإرسال الملفات والبيانات للسيرفرات الخارجية
-    "qs": "*", // لتنسيق الروابط والـ الاستعلامات (Queries)
-    "wa-sticker-formatter": "^4.3.2" // لتعديل وعمل الاستيكرات وضبط حقوقها
+    "meowsab": "https://github.com/deveni0/ws/tarball/main",
+    "sharp": "https://github.com/deveni0/sharp-tmx/tarball/main",
+    "cheerio": "1.0.0-rc.12",
+    "chokidar": "^5.0.0",
+    "file-type": "^18.0.0",
+    "form-data": "^4.0.5",
+    "qs": "*",
+    "wa-sticker-formatter": "^4.3.2"
   },
-  
-  // 🛠️ تخطي وإجبار السيرفر على استخدام روابط مكتبة sharp المحددة لتفادي مشاكل التحميل
   "overrides": {
     "sharp": "https://github.com/deveni0/sharp-tmx/tarball/main",
     "*": {
       "sharp": "https://github.com/deveni0/sharp-tmx/tarball/main"
     }
   }
-  }
+}

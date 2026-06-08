@@ -5,7 +5,7 @@ import sub from './sub.js';
 
 /* =========== Client ========== */
 const client = new Client({
-  phoneNumber: '201031044377', // رقم البوت بدون مسافات
+  phoneNumber: '201158601817', // رقم البوت بدون مسافات
   prefix: [".", "/", "!"],
   fromMe: true, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [

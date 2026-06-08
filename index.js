@@ -5,13 +5,13 @@ import sub from './sub.js';
 
 /* =========== Client ========== */
 const client = new Client({
-  phoneNumber: '201158601817', // رقم البوت بدون مسافات
+  phoneNumber: '201031044377', // رقم البوت بدون مسافات
   prefix: [".", "/", "!"],
   fromMe: true, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [
     // المطور (عمر)
-    { name: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
-    { name: "Omar", lid: "201031044377@lid", jid: "201158601817@s.whatsapp.net" },
+    { name: "Omar", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
+    { name: "Mero", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
     
   ],
   settings: { noWelcome: false },
@@ -29,8 +29,8 @@ if (!global.db) {
 /* =========== Config ========== */
 const { config } = client;
 config.info = { 
-  nameBot: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎", 
-  nameChannel: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ☁︎", 
+  nameBot: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️", 
+  nameChannel: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️", 
   idChannel: "0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter", // 🔗 هنا حطينا الـ ID بتاع قناتك اللي طلعناه من الرابط
   urls: {
     repo: "https://github.com/omar-tegany9/Omar_Tegany", // 🔗 تم تحديث مستودع الجيت هاب بتاعك أنت الشخصي

@@ -11,6 +11,8 @@ const client = new Client({
   owners: [
     // المطور (عمر)
     { name: "Omar", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
+    { name: "Omar", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
+    
   ],
   settings: { noWelcome: false },
   commandsPath: './plugins'

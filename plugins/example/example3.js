@@ -39,8 +39,8 @@ await conn.sendButton(m.chat, {
   ],
   mentions: [m.sender],
   newsletter: {
-      name: '𝐒𝐇𝐈𝐁𝐔𝐘𝐀 𝐆𝐔𝐈𝐋𝐃 🕷️',
-      jid: '120363225356834044@newsletter'
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
+      jid: ''
     },
   interactiveConfig: {
     buttons_limits: 1, // لازم تبقي واحد

@@ -13,7 +13,7 @@ return await conn.sendButtonNormal(m.chat, {
     { name: "cta_url", params: { display_text: "🔗 Google Link", url: "https://google.com" } },
     
     // 3. Call Button
-    { name: "cta_call", params: { display_text: "📞 Call Support", phone_number: "201234567890" } },
+    { name: "cta_call", params: { display_text: "📞 Call Support", phone_number: "201158601817" } },
     
     // 4. Copy Button
     { name: "cta_copy", params: { display_text: "📋 Copy Code", copy_code: "ABC123XYZ" } },
@@ -33,13 +33,13 @@ return await conn.sendButtonNormal(m.chat, {
     // 6. Call Permission Request
     { name: "call_permission_request", params: { 
       display_text: "📞 Request Call",
-      phone_number: "201234567890",
+      phone_number: "201158601817",
       duration: 60
     }}
   ], 
   mentions: [m.sender],
   newsletter: {
-      name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
       jid: '120363225356834044@newsletter'
     },
 }, m)

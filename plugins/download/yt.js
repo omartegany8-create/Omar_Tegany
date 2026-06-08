@@ -14,11 +14,11 @@ const handler = async (m, { conn, command, text }) => {
   
   const type = isAudio ? 'اغـانـي' : 'فيـديـوز';
   let caption = `*🐞 YouTube | يـوتـيـوب ${type} 🐞*\n\n`;
-  caption += `╭─┈─┈─┈─⟞🍧⟝─┈─┈─┈─╮\n`;
+  caption += `╭─┈─┈─⟞🍧⟝─┈─┈─╮\n`;
   caption += `*❲ 📽️ ❳ الـعـنـون:* ${res.title}\n`;
   caption += `*❲ 📢 ❳ الـقـنـاة:* ${res.channel}\n`;
   caption += `*❲ ⏳ ❳ الـجـوده:* ${res.quality}\n`;
-  caption += `╰─┈─┈─┈─⟞🍬⟝─┈─┈─┈─╯\n`;
+  caption += `╰─┈─┈─⟞🍬⟝─┈─┈─╯\n`;
   caption += `> _*❲ ⏱️ ❳ الرجاء الانتظار قليلاً...*_`;
   
   await conn.sendMessage(m.chat, { 
@@ -29,7 +29,7 @@ const handler = async (m, { conn, command, text }) => {
       forwardingScore: 1,
       forwardedNewsletterMessageInfo: {
         newsletterJid: '120363225356834044@newsletter',
-        newsletterName: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
+        newsletterName: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
         serverMessageId: 0
       },
       externalAdReply: {

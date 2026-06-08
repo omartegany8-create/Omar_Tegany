@@ -6,24 +6,72 @@ async function handler(m, { conn }) {
         delete global.gameActive[m.chat];
     }
     
-    const res = await fetch("https://gist.githubusercontent.com/Kyutaka101/799d5646ceed992bf862026847473852/raw/dcbecff259b1d94615d7c48079ed1396ed42ef67/gistfile1.txt");
-    const data = await res.json();
-    const country = data[Math.floor(Math.random() * data.length)];
+const flagsData = [
+        // الدول القديمة
+        { name: "مصر", img: "https://flagcdn.com/w640/eg.png" },
+        { name: "السعودية", img: "https://flagcdn.com/w640/sa.png" },
+        { name: "فلسطين", img: "https://flagcdn.com/w640/ps.png" },
+        { name: "اليابان", img: "https://flagcdn.com/w640/jp.png" },
+        { name: "البرازيل", img: "https://flagcdn.com/w640/br.png" },
+        { name: "الارجنتين", img: "https://flagcdn.com/w640/ar.png" },
+        { name: "المغرب", img: "https://flagcdn.com/w640/ma.png" },
+        { name: "الجزائر", img: "https://flagcdn.com/w640/dz.png" },
+        { name: "تونس", img: "https://flagcdn.com/w640/tn.png" },
+        { name: "فرنسا", img: "https://flagcdn.com/w640/fr.png" },
+        { name: "المانيا", img: "https://flagcdn.com/w640/de.png" },
+        { name: "اسبانيا", img: "https://flagcdn.com/w640/es.png" },
+        { name: "ايطاليا", img: "https://flagcdn.com/w640/it.png" },
+        { name: "إنجلترا", img: "https://flagcdn.com/w640/gb.png" },
+        { name: "أمريكا", img: "https://flagcdn.com/w640/us.png" },
+        { name: "كوريا الجنوبية", img: "https://flagcdn.com/w640/kr.png" },
+        { name: "العراق", img: "https://flagcdn.com/w640/iq.png" },
+        { name: "الإمارات", img: "https://flagcdn.com/w640/ae.png" },
+        { name: "قطر", img: "https://flagcdn.com/w640/qa.png" },
+        { name: "البرتغال", img: "https://flagcdn.com/w640/pt.png" },
+        { name: "الكويت", img: "https://flagcdn.com/w640/kw.png" },
+        { name: "البحرين", img: "https://flagcdn.com/w640/bh.png" },
+        { name: "عمان", img: "https://flagcdn.com/w640/om.png" },
+        { name: "الاردن", img: "https://flagcdn.com/w640/jo.png" },
+        { name: "سوريا", img: "https://flagcdn.com/w640/sy.png" },
+        { name: "لبنان", img: "https://flagcdn.com/w640/lb.png" },
+        { name: "اليمن", img: "https://flagcdn.com/w640/ye.png" },
+        { name: "السودان", img: "https://flagcdn.com/w640/sd.png" },
+        { name: "ليبيا", img: "https://flagcdn.com/w640/ly.png" },
+        { name: "روسيا", img: "https://flagcdn.com/w640/ru.png" },
+        { name: "الصين", img: "https://flagcdn.com/w640/cn.png" },
+        { name: "كندا", img: "https://flagcdn.com/w640/ca.png" },
+        { name: "المكسيك", img: "https://flagcdn.com/w640/mx.png" },
+        { name: "هولندا", img: "https://flagcdn.com/w640/nl.png" },
+        { name: "بلجيكا", img: "https://flagcdn.com/w640/be.png" },
+        { name: "سويسرا", img: "https://flagcdn.com/w640/ch.png" },
+        { name: "كرواتيا", img: "https://flagcdn.com/w640/hr.png" },
+        { name: "تركيا", img: "https://flagcdn.com/w640/tr.png" },
+        { name: "الهند", img: "https://flagcdn.com/w640/in.png" },
+        { name: "استراليا", img: "https://flagcdn.com/w640/au.png" },
+        { name: "نيجيريا", img: "https://flagcdn.com/w640/ng.png" },
+        { name: "السنغال", img: "https://flagcdn.com/w640/sn.png" },
+        { name: "غانا", img: "https://flagcdn.com/w640/gh.png" },
+        { name: "الكاميرون", img: "https://flagcdn.com/w640/cm.png" },
+        { name: "جنوب أفريقيا", img: "https://flagcdn.com/w640/za.png" }
+    ];
+    
+    // اختيار علم عشوائي من القائمة النظيفة
+    const country = flagsData[Math.floor(Math.random() * flagsData.length)];
     
     const msg = await conn.sendMessage(m.chat, {
         image: { url: country.img },
-        caption: "🌍 *خمن العلم*\n\nلديك 30 ثانيه لـ الإجابة رد علي الرساله ب اسم العلم"
+        caption: "🌍 *خـمـن الـعـلـم* 🌍\n\nلديك 30 ثانية للإجابة!\n*رد على هذه الرسالة باسم العلم الصحيح*"
     });
     
     global.gameActive[m.chat] = {
-        answer: country.name.toLowerCase(),
+        answer: country.name.trim().toLowerCase(),
         image: country.img,
         msgId: msg.key.id,
         timeout: setTimeout(() => {
             if (global.gameActive[m.chat]) {
                 const answer = global.gameActive[m.chat].answer;
                 delete global.gameActive[m.chat];
-                conn.sendMessage(m.chat, { text: `⏰ *أنتهي الوقت* الإجابة هي : *${answer}*` });
+                conn.sendMessage(m.chat, { text: `⏰ *انتهى الوقت!* الإجابة الصحيحة هي: *${answer}*` });
             }
         }, 30000)
     };
@@ -42,17 +90,17 @@ handler.before = async (m, { conn }) => {
         
         if (global.db?.users[m.sender]) {
             global.db.users[m.sender].xp = (global.db.users[m.sender].xp || 0) + 100;
-            global.db.users[m.sender].cookies = (global.db.users[m.sender].cookies  || 0) + 2;
+            global.db.users[m.sender].cookies = (global.db.users[m.sender].cookies || 0) + 2;
         }
         
         await conn.sendMessage(m.chat, {
             image: { url: game.image },
-            caption: `🎉 *صحيح صحيح* عاش جبت اسم العلم صح *100XP & 2 cookies*\n💡 هل هتعرف تكمل؟\n\n> اكتب *${m.prefix || '.'}علم* عشان تلعب تاني`
+            caption: `🎉 *إجابة صحيحة !* \n\nعاش  جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n> اكتب *${m.prefix || '.'}علم* لبدء تحدي جديد!`
         });
         return true;
     }
     
-    await m.reply("*❌ إجابة غلط رد جرب تاني*");
+    await m.reply("❌ *إجابة خاطئة!* رد على رسالة العلم وحاول مرة أخرى.");
     return true;
 };
 

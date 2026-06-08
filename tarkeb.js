@@ -80,7 +80,7 @@ async function handler(m, { conn }) {
     };
 }
 
-handler.usage = ["كتابه"];
+handler.usage = ["تركيب"];
 handler.category = "games";
-handler.command = ['كتابه', 'كتابة'];
+handler.command = ['تركيب', 'دمج'];
 export default handler;

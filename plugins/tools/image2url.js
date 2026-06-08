@@ -21,14 +21,14 @@ const handler = async (m, { conn, command }) => {
     ],
     mentions: [m.sender],
     newsletter: {
-      name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
-      jid: '120363225356834044@newsletter'
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
+      jid: ''
     },
     interactiveConfig: {
       buttons_limits: 10,
-      list_title: "𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️",
+      list_title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
       button_title: "Click Here",
-      canonical_url: "https://vxv-profile.vercel.app"
+      canonical_url: ""
     }
   }, m);
 };

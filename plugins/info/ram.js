@@ -15,7 +15,7 @@ const handler = async (m, { conn }) => {
     body: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
     newsletter: {
       name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-      jid: '120363225356834044@newsletter'
+      jid: ''
     },
     big: false,
     mentions: [m.sender]

@@ -22,7 +22,7 @@ const handler = async (m, { conn, command }) => {
     mentions: [m.sender],
     newsletter: {
       name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-      jid: '120363225356834044@newsletter'
+      jid: ''
     },
     interactiveConfig: {
       buttons_limits: 10,

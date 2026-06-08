@@ -31,7 +31,7 @@ async function handler(m, { command, text, conn }) {
             return m.reply(`🎮 *تم إنشاء لعبة XO بنجاح!*\n\n@${m.sender.split('@')[0]} ينتظر خصماً الآن..\n\n> _اكتب *${m.prefix || '.'}${command}* للعب ضده وتحديه!_`, null, { mentions: [m.sender] });
         }
         
-        // لو في لعبة قيد الانتظار
+        // لو في لعبة قيد الانتظار وصاحبك كتب .xo هيدخل هنا علطول ويشتغل
         if (game.status === 'waiting') {
             if (game.player1 === m.sender) return m.reply("❌ لا يمكنك اللعب ضد نفسك! انتظر خصماً حقيقياً.");
             
@@ -44,7 +44,7 @@ async function handler(m, { command, text, conn }) {
             });
         }
         
-        // لو في لعبة شغالة بالفعل في الشات
+        // لو في لعبة شغالة بالفعل في الشات وكتب .xo تالت
         if (game.status === 'playing') {
             return m.reply(`❌ توجد لعبة نشطة بالفعل حالياً في الجروب!\n\nاكتب *${m.prefix || '.'}${command} حذف* لإلغائها وبدء جولة جديدة.`);
         }

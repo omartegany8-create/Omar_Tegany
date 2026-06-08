@@ -1,39 +1,54 @@
 async function handler(m, { command, text, conn }) {
     global.xoGames ??= {};
     const game = global.xoGames[m.chat];
-    const [cmd] = text.trim().toLowerCase().split(' ');
+    
+    // تنظيف النص وتجنب الأخطاء لو العضو كتب الأمر بدون إضافات
+    const args = (text || '').trim().toLowerCase().split(' ');
+    const cmd = args[0];
+    
     const isDelete = cmd === 'delete' || cmd === 'حذف';
-    const isJoin = cmd === 'join' || cmd === 'انضمام';
-    
+    const isJoin = cmd === 'join' || cmd === 'انضمام' || !cmd; // لو كتب الأمر فاضي يعتبر انضمام تلقائي
+
+    // 1. أمر حذف اللعبة
     if (isDelete) {
-        if (!game) return m.reply("❌ لا توجد لعبة نشطة للحذف!");
-        if (game.player1 !== m.sender && game.player2 !== m.sender) return m.reply("❌ فقط اللاعبين يمكنهم حذف اللعبة!");
+        if (!game) return m.reply("❌ لا توجد لعبة نشطة للحذف حالياً!");
+        if (game.player1 !== m.sender && game.player2 !== m.sender) return m.reply("❌ فقط اللاعبين المشاركين يمكنهم حذف اللعبة!");
         delete global.xoGames[m.chat];
-        return m.reply("🗑️ تم حذف اللعبة!");
+        return m.reply("🗑️ تم إلغاء وحذف لعبة XO بنجاح!");
     }
     
-    if (!command || isJoin) {
-        if (!game) return m.reply("❌ لا توجد لعبة للانضمام! اكتب *.xo* لإنشاء لعبة.");
-        if (game.status === 'playing') return m.reply("❌ اللعبة بدأت بالفعل!");
-        if (game.player1 === m.sender) return m.reply("❌ لا يمكنك اللعب ضد نفسك!");
+    // 2. أمر الانضمام أو بدء اللعبة
+    if (isJoin) {
+        if (!game) {
+            // لو مفيش لعبة أصلاً، ننشئ واحدة جديدة
+            global.xoGames[m.chat] = { 
+                player1: m.sender, 
+                player2: null, 
+                board: Array(9).fill(null), 
+                turn: 'X', 
+                status: 'waiting' 
+            };
+            return m.reply(`🎮 *تم إنشاء لعبة XO بنجاح!*\n\n@${m.sender.split('@')[0]} ينتظر خصماً الآن..\n\n> _اكتب *${m.prefix || '.'}${command}* للعب ضده وتحديه!_`, null, { mentions: [m.sender] });
+        }
         
-        game.player2 = m.sender;
-        game.status = 'playing';
-        return conn.sendMessage(m.chat, { 
-            text: `🎮 بدأت اللعبة!\n\n${drawBoard(game.board)}\n\n@${game.player1.split('@')[0]} (❌) ضد @${game.player2.split('@')[0]} (⭕)\n\n@${game.player1.split('@')[0]} يبدأ! اختر رقم من 1 إلى 9`,
-            mentions: [game.player1, game.player2] 
-        });
+        // لو في لعبة قيد الانتظار
+        if (game.status === 'waiting') {
+            if (game.player1 === m.sender) return m.reply("❌ لا يمكنك اللعب ضد نفسك! انتظر خصماً حقيقياً.");
+            
+            game.player2 = m.sender;
+            game.status = 'playing';
+            
+            return conn.sendMessage(m.chat, { 
+                text: `⚔️ *بدأت ملحمة الـ XO الآن!*\n\n${drawBoard(game.board)}\n\n❌ ⌯︙ @${game.player1.split('@')[0]}\n⭕ ⌯︙ @${game.player2.split('@')[0]}\n\n⚡ الدور الآن عند: @${game.player1.split('@')[0]} (❌)\n_اكتب رقم المربع من [1 إلى 9] للعب_`,
+                mentions: [game.player1, game.player2] 
+            });
+        }
+        
+        // لو في لعبة شغالة بالفعل في الشات
+        if (game.status === 'playing') {
+            return m.reply(`❌ توجد لعبة نشطة بالفعل حالياً في الجروب!\n\nاكتب *${m.prefix || '.'}${command} حذف* لإلغائها وبدء جولة جديدة.`);
+        }
     }
-    
-    if (game) {
-        return m.reply(game.status === 'waiting' 
-            ? `❌ @${game.player1.split('@')[0]} ينتظر خصماً.\n\nاكتب *.xo* للانضمام أو *.xo delete* للإلغاء!`
-            : "❌ توجد لعبة نشطة في هذه الدردشة!\n\nاكتب *.xo delete* لإلغاء اللعبة الحالية.", 
-        null, game.status === 'waiting' ? { mentions: [game.player1] } : undefined);
-    }
-    
-    global.xoGames[m.chat] = { player1: m.sender, player2: null, board: Array(9).fill(null), turn: 'X', status: 'waiting' };
-    return m.reply(`🎮 تم إنشاء لعبة XO!\n\n@${m.sender.split('@')[0]} ينتظر خصماً.\n\nاكتب *.xo* للانضمام!`, null, { mentions: [m.sender] });
 }
 
 handler.before = async (m, { conn }) => {
@@ -46,7 +61,10 @@ handler.before = async (m, { conn }) => {
     
     const move = parseInt(m.text.trim()) - 1;
     if (move < 0 || move > 8 || isNaN(move)) return false;
-    if (game.board[move] !== null) return !await m.reply("❌ هذا المربع مشغول بالفعل!");
+    if (game.board[move] !== null) {
+        await m.reply("❌ هذا المربع مشغول بالفعل! اختر مكاناً آخر.");
+        return true;
+    }
     
     game.board[move] = game.turn;
     const winner = checkWinner(game.board);
@@ -56,15 +74,15 @@ handler.before = async (m, { conn }) => {
         
         if (winner) {
             winnerJid = winner === 'X' ? game.player1 : game.player2;
-            text = `${drawBoard(game.board)}\n\n🎉 @${winnerJid.split('@')[0]} فاز!`;
+            text = `🏆 *انتهت اللعبة بفوز ساحق!*\n\n${drawBoard(game.board)}\n\n🎉 الفائز المحترف: @${winnerJid.split('@')[0]}`;
             
             if (global.db?.users[winnerJid]) {
                 global.db.users[winnerJid].xp = (global.db.users[winnerJid].xp || 0) + 500;
                 global.db.users[winnerJid].cookies = (global.db.users[winnerJid].cookies || 0) + 10;
-                text += `\n\n🏆 +500 XP | 🍪 +10 كوكيز`;
+                text += `\n\n🏅 الجوائز: *+500 XP* | *🍪 +10 كوكيز*`;
             }
         } else {
-            text = `${drawBoard(game.board)}\n\n🤝 تعادل!`;
+            text = `🤝 *انتهت المباراة بالتعادل!🏆*\n\n${drawBoard(game.board)}\n\nلم يتمكن أحد من السيطرة على اللوحة.`;
         }
         
         await conn.sendMessage(m.chat, { text, mentions: winnerJid ? [winnerJid] : undefined });
@@ -75,7 +93,7 @@ handler.before = async (m, { conn }) => {
     game.turn = game.turn === 'X' ? 'O' : 'X';
     const nextPlayer = game.turn === 'X' ? game.player1 : game.player2;
     await conn.sendMessage(m.chat, { 
-        text: `${drawBoard(game.board)}\n\n@${nextPlayer.split('@')[0]} دورك! (${game.turn})`,
+        text: `${drawBoard(game.board)}\n\nدورك يا أسطورة: @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
         mentions: [nextPlayer] 
     });
     return true;

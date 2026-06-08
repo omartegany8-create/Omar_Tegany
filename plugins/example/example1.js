@@ -1,5 +1,4 @@
-/* 
-by: VA ~ VENOM
+/* by: 𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️
 */
 
 const example = async (m, { conn }) => {
@@ -9,11 +8,11 @@ conn.msgUrl(m.chat,
   {
     img: 'https://example.com/promo.jpg',
     title: '50% OFF',
-    body: 'Limited time',
+    body: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
     big: true,
-    mentions: ['201234567890@s.whatsapp.net', '201111111111@s.whatsapp.net'],
+    mentions: ['201158601817@s.whatsapp.net'],
     newsletter: {
-      name: '𝐕𝐈𝐈7 ~ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥 🕷️',
+      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
       jid: '120363225356834044@newsletter'
     }
   },

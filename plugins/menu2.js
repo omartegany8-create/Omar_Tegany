@@ -90,7 +90,7 @@ const uptimeFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).pad
             mentions: [m.sender],
             newsletter: {
                 name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-                jid: '120363225356834044@newsletter'
+                jid: ''
             }
         }, global.reply_status);
         return;

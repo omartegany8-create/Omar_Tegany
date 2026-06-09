@@ -1,11 +1,30 @@
-// تغيير اسم الفانكشن لـ writeHandler عشان تمنع التضارب
-async function writeHandler(m, { conn }) {
+/*
+code: game write
+by: 𝐓𝐨𝐣𝐢 & Gemini
+*/
+
+const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
+
+async function writeHandler(m, { conn, text, command }) {
     if (!global.writeGame) global.writeGame = { games: {}, scores: {} };
 
-    if (global.writeGame.games[m.chat]) {
-        clearTimeout(global.writeGame.games[m.chat].timeout);
+    const args = (text || '').trim().toLowerCase().split(' ');
+    const cmd = args[0];
+
+    // ميزة الحذف لمنع التكرار والبدء من جديد
+    if (cmd === 'حذف' || cmd === 'delete') {
+        if (!global.writeGame.games[m.chat]) return m.reply("❌ لا توجد لعبة كتابة نشطة لإلغائها حالياً!");
+        if (global.writeGame.games[m.chat].timeout) clearTimeout(global.writeGame.games[m.chat].timeout);
         delete global.writeGame.games[m.chat];
+        return m.reply("🗑️ تم إلغاء وحذف لعبة الكتابة بنجاح! يمكنك البدء من جديد الآن.");
     }
+
+    if (global.writeGame.games[m.chat]) {
+        return m.reply(`❌ هناك جولة قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
+    }
+
+    // ريأكت قلم الرصاص عند طلب اللعبة ✏️
+    await conn.sendMessage(m.chat, { react: { text: "✏️", key: m.key } });
 
     const wordsList = [
         "سكونا", "غوجو", "لوفي", "ميرو", "ناروتو", "إيتاتشي", "أيزن", "شيبويا", 
@@ -18,6 +37,7 @@ async function writeHandler(m, { conn }) {
 ╭─┈─┈─┈─⟞✍️⟝─┈─┈─┈─╮
 ┃ *⌯︙ ${randomWord}*
 ╰─┈─┈─┈─⟞⚙️⟝─┈─┈─┈─╯
+${LINE_SEPARATOR}
 > _*أسرع واحد يكتب الكلمة السابقة بشكل صحيح يكسب نقطة! ⏱️ 30 ثانية*_`);
     
     if (!global.writeGame.scores[m.chat]) global.writeGame.scores[m.chat] = {};
@@ -48,6 +68,9 @@ writeHandler.before = async (m, { conn }) => {
     if (!global.writeGame.scores[m.chat][player]) global.writeGame.scores[m.chat][player] = 0;
     global.writeGame.scores[m.chat][player]++;
     
+    // ريأكت فوز سريع برق ⚡ على رسالة العضو
+    await conn.sendMessage(m.chat, { react: { text: "⚡", key: m.key } });
+
     let total = 0;
     for (let id in global.writeGame.scores[m.chat]) {
         total += global.writeGame.scores[m.chat][id];
@@ -70,15 +93,18 @@ writeHandler.before = async (m, { conn }) => {
         }
         
         await conn.sendMessage(m.chat, { 
-            text: `🏆 *الفائزون في لـعـبـة الـكـتـابـة*\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
+            text: `🏆 *الفائزون في لـعـبـة الـكـتـابـة*\n${LINE_SEPARATOR}\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
             mentions
         });
         delete global.writeGame.scores[m.chat];
         return;
     }
 
-    await m.reply(`✅ احسنت معاك: ${global.writeGame.scores[m.chat][player]} نقطه`);
-    writeHandler(m, { conn }); // استدعاء نفس الفانكشن بدون تضارب
+    await conn.sendMessage(m.chat, {
+        text: `✅ احسنت معاك: ${global.writeGame.scores[m.chat][player]} نقطه`
+    }, { quoted: m });
+    
+    writeHandler(m, { conn, text: '', command: 'كتابه' });
 };
 
 writeHandler.usage = ["كتابه"];

@@ -2,14 +2,12 @@ async function handler(m, { command, text, conn }) {
     global.xoGames ??= {};
     const game = global.xoGames[m.chat];
     
-    // تنظيف النص وتجنب الأخطاء لو العضو كتب الأمر بدون إضافات
     const args = (text || '').trim().toLowerCase().split(' ');
     const cmd = args[0];
     
     const isDelete = cmd === 'delete' || cmd === 'حذف';
-    const isJoin = cmd === 'join' || cmd === 'انضمام' || !cmd; // لو كتب الأمر فاضي يعتبر انضمام تلقائي
+    const isJoin = cmd === 'join' || cmd === 'انضمام' || !cmd;
 
-    // 1. أمر حذف اللعبة
     if (isDelete) {
         if (!game) return m.reply("❌ لا توجد لعبة نشطة للحذف حالياً!");
         if (game.player1 !== m.sender && game.player2 !== m.sender) return m.reply("❌ فقط اللاعبين المشاركين يمكنهم حذف اللعبة!");
@@ -17,10 +15,8 @@ async function handler(m, { command, text, conn }) {
         return m.reply("🗑️ تم إلغاء وحذف لعبة XO بنجاح!");
     }
     
-    // 2. أمر الانضمام أو بدء اللعبة
     if (isJoin) {
         if (!game) {
-            // لو مفيش لعبة أصلاً، ننشئ واحدة جديدة
             global.xoGames[m.chat] = { 
                 player1: m.sender, 
                 player2: null, 
@@ -28,23 +24,30 @@ async function handler(m, { command, text, conn }) {
                 turn: 'X', 
                 status: 'waiting' 
             };
+            // ريأكت الدائرة عند بدء اللعبة
+            await conn.sendMessage(m.chat, { react: { text: "⭕", key: m.key } });
             return m.reply(`🎮 *تم إنشاء لعبة XO بنجاح!*\n\n@${m.sender.split('@')[0]} ينتظر خصماً الآن..\n\n> _اكتب *${m.prefix || '.'}${command}* للعب ضده وتحديه!_`, null, { mentions: [m.sender] });
         }
         
-        // لو في لعبة قيد الانتظار وصاحبك كتب .xo هيدخل هنا علطول ويشتغل
         if (game.status === 'waiting') {
             if (game.player1 === m.sender) return m.reply("❌ لا يمكنك اللعب ضد نفسك! انتظر خصماً حقيقياً.");
             
             game.player2 = m.sender;
             game.status = 'playing';
             
-            return conn.sendMessage(m.chat, { 
+            // ريأكت الصح عند انضمام الخصم
+            await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
+            
+            const msg = await conn.sendMessage(m.chat, { 
                 text: `⚔️ *بدأت ملحمة الـ XO الآن!*\n\n${drawBoard(game.board)}\n\n❌ ⌯︙ @${game.player1.split('@')[0]}\n⭕ ⌯︙ @${game.player2.split('@')[0]}\n\n⚡ الدور الآن عند: @${game.player1.split('@')[0]} (❌)\n_اكتب رقم المربع من [1 إلى 9] للعب_`,
                 mentions: [game.player1, game.player2] 
             });
+            
+            // ريأكت إكس لأن الدور الأول دايماً لـ X
+            await conn.sendMessage(m.chat, { react: { text: "❌", key: msg.key } });
+            return;
         }
         
-        // لو في لعبة شغالة بالفعل في الشات وكتب .xo تالت
         if (game.status === 'playing') {
             return m.reply(`❌ توجد لعبة نشطة بالفعل حالياً في الجروب!\n\nاكتب *${m.prefix || '.'}${command} حذف* لإلغائها وبدء جولة جديدة.`);
         }
@@ -81,8 +84,12 @@ handler.before = async (m, { conn }) => {
                 global.db.users[winnerJid].cookies = (global.db.users[winnerJid].cookies || 0) + 10;
                 text += `\n\n🏅 الجوائز: *+500 XP* | *🍪 +10 كوكيز*`;
             }
+            // ريأكت الفوز الاحتفالي
+            await conn.sendMessage(m.chat, { react: { text: "🎉", key: m.key } });
         } else {
             text = `🤝 *انتهت المباراة بالتعادل!🏆*\n\n${drawBoard(game.board)}\n\nلم يتمكن أحد من السيطرة على اللوحة.`;
+            // ريأكت الميزان للتعادل
+            await conn.sendMessage(m.chat, { react: { text: "⚖️", key: m.key } });
         }
         
         await conn.sendMessage(m.chat, { text, mentions: winnerJid ? [winnerJid] : undefined });
@@ -92,10 +99,16 @@ handler.before = async (m, { conn }) => {
     
     game.turn = game.turn === 'X' ? 'O' : 'X';
     const nextPlayer = game.turn === 'X' ? game.player1 : game.player2;
-    await conn.sendMessage(m.chat, { 
+    
+    const msg = await conn.sendMessage(m.chat, { 
         text: `${drawBoard(game.board)}\n\nدورك يا أسطورة: @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
         mentions: [nextPlayer] 
     });
+    
+    // ريأكت حسب رمز الدور الحالي
+    const currentTurnEmoji = game.turn === 'X' ? "❌" : "⭕";
+    await conn.sendMessage(m.chat, { react: { text: currentTurnEmoji, key: msg.key } });
+    
     return true;
 };
 

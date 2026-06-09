@@ -1,4 +1,10 @@
-// مصفوفة الأعلام العالمية
+/*
+code: game country
+by: 𝐓𝐨𝐣𝐢 & Gemini
+*/
+
+const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
+
 const flagsData = [
     { name: "مصر", img: "https://flagcdn.com/w640/eg.png" },
     { name: "السعودية", img: "https://flagcdn.com/w640/sa.png" },
@@ -47,23 +53,34 @@ const flagsData = [
     { name: "جنوب أفريقيا", img: "https://flagcdn.com/w640/za.png" }
 ];
 
-async function handler(m, { conn }) {
+async function handler(m, { conn, text, command }) {
     if (!global.gameActive) global.gameActive = {};
     
-    // لو اللعبة شغالة بالفعل في الشات، نمنع تكرار الأمر
-    if (global.gameActive[m.chat]) return m.reply("❌ هناك جولة قائمة بالفعل في هذا الجروب!");
+    const args = (text || '').trim().toLowerCase().split(' ');
+    const cmd = args[0];
+
+    // ميزة الحذف لمنع التكرار والبدء من جديد
+    if (cmd === 'حذف' || cmd === 'delete') {
+        if (!global.gameActive[m.chat]) return m.reply("❌ لا توجد لعبة علم نشطة لإلغائها حالياً!");
+        if (global.gameActive[m.chat].timeout) clearTimeout(global.gameActive[m.chat].timeout);
+        delete global.gameActive[m.chat];
+        return m.reply("🗑️ تم إلغاء وحذف لعبة العلم بنجاح! يمكنك البدء من جديد الآن.");
+    }
+
+    if (global.gameActive[m.chat]) return m.reply(`❌ هناك جولة قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
     
-    // بدء جولة جديدة من الصفر (1/10)
+    // ريأكت علم مصر عند طلب اللعبة 🇪🇬
+    await conn.sendMessage(m.chat, { react: { text: "🇪🇬", key: m.key } });
+    
     startGame(m, conn, 1);
 }
 
-// دالة لتشغيل الجولة وإرسال العلم
 async function startGame(m, conn, round) {
     const country = flagsData[Math.floor(Math.random() * flagsData.length)];
     
     const msg = await conn.sendMessage(m.chat, {
         image: { url: country.img },
-        caption: `🌍 *خـمـن الـعـلـم [ الجولة: ${round} / 10 ]* 🌍\n\nلديك 30 ثانية للإجابة!\n*رد على هذه الرسالة باسم العلم الصحيح*`
+        caption: `🌍 *خـمـن الـعـلـم [ الجولة: ${round} / 10 ]* 🌍\n${LINE_SEPARATOR}\n\nلديك 30 ثانية للإجابة!\n*رد على هذه الرسالة باسم العلم الصحيح*`
     });
     
     global.gameActive[m.chat] = {
@@ -79,12 +96,11 @@ async function startGame(m, conn, round) {
                 
                 await conn.sendMessage(m.chat, { text: `⏰ *انتهى الوقت!* الإجابة الصحيحة هي: *${answer}*` });
                 
-                // الانتقال للجولة التالية تلقائياً لو لسه مخلصناش الـ 10
                 if (currentRound < 10) {
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // انتظر ثانيتين قبل الجولة الجديدة
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     startGame(m, conn, currentRound + 1);
                 } else {
-                    conn.sendMessage(m.chat, { text: "🏁 *انتهت الـ 10 جولات كاملة! شكراً للجميع على اللعب.*" });
+                    conn.sendMessage(m.chat, { text: `🏁 *انتهت الـ 10 جولات كاملة!*\n${LINE_SEPARATOR}\nشكراً للجميع على اللعب.` });
                 }
             }
         }, 30000)
@@ -108,8 +124,10 @@ handler.before = async (m, { conn }) => {
             global.db.users[m.sender].cookies = (global.db.users[m.sender].cookies || 0) + 2;
         }
         
-        // رسالة الفوز مع المنشن وتغيير سطر الجولة القادمة
-        let captionText = `🎉 *إجابة صحيحة !* \n\nعاش يا @${m.sender.split('@')[0]} جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n`;
+        // ريأكت الفوز 💯 على رسالة العضو
+        await conn.sendMessage(m.chat, { react: { text: "💯", key: m.key } });
+        
+        let captionText = `🎉 *إجابة صحيحة !* \n${LINE_SEPARATOR}\n\nعاش يا @${m.sender.split('@')[0]} جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n${LINE_SEPARATOR}\n`;
         
         if (currentRound < 10) {
             captionText += `⏳ *استعدوا.. الجولة القادمة (${currentRound + 1} / 10) ستبدأ الآن!*`;
@@ -121,9 +139,8 @@ handler.before = async (m, { conn }) => {
             image: { url: game.image },
             caption: captionText,
             mentions: [m.sender]
-        });
+        }, { quoted: m });
         
-        // الدخول في الجولة الجديدة بعد 3 ثواني
         if (currentRound < 10) {
             await new Promise(resolve => setTimeout(resolve, 3000));
             startGame(m, conn, currentRound + 1);

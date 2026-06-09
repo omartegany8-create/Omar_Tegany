@@ -14,17 +14,17 @@ async function arrangeHandler(m, { conn, text, command }) {
     const data = await (await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-تفكيك.json")).json();
     const q = data[Math.floor(Math.random() * data.length)];
     
-    // البوت هيعرض الكلمة كاملة وصحيحة والمطلوب كتابتها بسرعة
+    // الحل السحري: البوت يعرض الكلمة المفككة (قالب الحروف) واللاعب يدمجها
     m.reply(`
 ╭─┈─┈─┈─⟞🧩⟝─┈─┈─┈─╮
-┃ *⌯︙ ${q.response}*
+┃ *⌯︙ ${q.question.trim()}*
 ╰─┈─┈─┈─⟞⚙️⟝─┈─┈─┈─╯
-> _*اكتب الكلمة السابقة بسرعة وبنفس الحروف لتكسب نقطة! معاك ٣٠ ثانية قبل انتهاء الجولة*_`);
+> _*رتب وادمج الكلمة السابقة بسرعة لتكسب نقطة! معاك ٣٠ ثانية قبل انتهاء الجولة*_`);
     
     if (!global.arrangeGame.scores[m.chat]) global.arrangeGame.scores[m.chat] = {};
     
     global.arrangeGame.games[m.chat] = {
-        answer: q.response.trim(), // الإجابة هي نفس الكلمة المعروضة ونظيفة
+        answer: q.response.trim().toLowerCase(), // الإجابة الصحيحة المدمجة النظيفة
         timeout: setTimeout(() => {
             if (global.arrangeGame.games[m.chat]) {
                 delete global.arrangeGame.games[m.chat];
@@ -41,14 +41,17 @@ arrangeHandler.before = async (m, { conn }) => {
     const game = global.arrangeGame.games[m.chat];
     const player = m.sender;
     
-    // التحقق من الإجابة (تطابق الكلمة بالملّي)
-    if (m.text.trim() !== game.answer) return;
+    // التحقق من الإجابة (تطابق الكلمة المدمجة بالملّي)
+    if (m.text.trim().toLowerCase() !== game.answer) return;
 
     clearTimeout(game.timeout);
     delete global.arrangeGame.games[m.chat];
 
     if (!global.arrangeGame.scores[m.chat][player]) global.arrangeGame.scores[m.chat][player] = 0;
     global.arrangeGame.scores[m.chat][player]++;
+    
+    // ريأكت البرق ⚡ على رسالة العضو اللي جاوب صح
+    await conn.sendMessage(m.chat, { react: { text: "⚡", key: m.key } });
     
     let total = 0;
     for (let id in global.arrangeGame.scores[m.chat]) {
@@ -73,16 +76,20 @@ arrangeHandler.before = async (m, { conn }) => {
         }
         
         await conn.sendMessage(m.chat, { 
-            text: `🏆 *الفائزون في لـعـبـة الـتـركـيـب*\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
+            text: `🏆 *الفائزون في لـعـبـة الـتـركـيـب والـدمـج*\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز ⚡`,
             mentions
         });
         delete global.arrangeGame.scores[m.chat];
         return;
     }
 
-    await m.reply(`✅ احسنت معاك: ${global.arrangeGame.scores[m.chat][player]} نقطه`);
+    // رسالة المكافأة مع المنشن والإيموجي ⚡
+    await conn.sendMessage(m.chat, {
+        text: `⚡ أحسنت يا @${player.split('@')[0]} إجابة صحيحة مدمجة! معاك: ${global.arrangeGame.scores[m.chat][player]} نقطة.`,
+        mentions: [player]
+    }, { quoted: m });
     
-    // استدعاء الميثود بشكل برمجى سليم ومضمون للجولة التالية
+    // استدعاء الميثود للجولة التالية تلقائياً
     await new Promise(resolve => setTimeout(resolve, 1500));
     arrangeHandler(m, { conn, text: '', command: 'تركيب' });
 };
@@ -91,3 +98,4 @@ arrangeHandler.usage = ["تركيب"];
 arrangeHandler.category = "games";
 arrangeHandler.command = ['تركيب', 'دمج'];
 export default arrangeHandler;
+    

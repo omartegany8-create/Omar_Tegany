@@ -1,11 +1,30 @@
-// تغيير اسم الفانكشن لـ breakHandler
-async function breakHandler(m, { conn }) {
+/*
+code: game break
+by: 𝐓𝐨𝐣𝐢 & Gemini
+*/
+
+const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
+
+async function breakHandler(m, { conn, text, command }) {
     if (!global.breakGame) global.breakGame = { games: {}, scores: {} };
 
-    if (global.breakGame.games[m.chat]) {
-        clearTimeout(global.breakGame.games[m.chat].timeout);
+    const args = (text || '').trim().toLowerCase().split(' ');
+    const cmd = args[0];
+
+    // ميزة الحذف لمنع التكرار والبدء من جديد
+    if (cmd === 'حذف' || cmd === 'delete') {
+        if (!global.breakGame.games[m.chat]) return m.reply("❌ لا توجد لعبة تفكيك نشطة لإلغائها حالياً!");
+        if (global.breakGame.games[m.chat].timeout) clearTimeout(global.breakGame.games[m.chat].timeout);
         delete global.breakGame.games[m.chat];
+        return m.reply("🗑️ تم إلغاء وحذف لعبة التفكيك بنجاح! يمكنك البدء من جديد الآن.");
     }
+
+    if (global.breakGame.games[m.chat]) {
+        return m.reply(`❌ هناك جولة قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
+    }
+
+    // ريأكت بازل أيقونة التفكيك 🧩
+    await conn.sendMessage(m.chat, { react: { text: "🧩", key: m.key } });
 
     const data = await (await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-تفكيك.json")).json();
     const q = data[Math.floor(Math.random() * data.length)];
@@ -14,6 +33,7 @@ async function breakHandler(m, { conn }) {
 ╭─┈─┈─┈─⟞🔨⟝─┈─┈─┈─╮
 ┃ *⌯︙ ${q.question}*
 ╰─┈─┈─┈─⟞⚙️⟝─┈─┈─┈─╯
+${LINE_SEPARATOR}
 > _*اكتب الكلام بسرعه عشان تتحسبلك نقطه + بعد ٣٠ ثانيه لو مردتش اللعبه هتنتهي*_`);
     
     if (!global.breakGame.scores[m.chat]) global.breakGame.scores[m.chat] = {};
@@ -44,6 +64,9 @@ breakHandler.before = async (m, { conn }) => {
     if (!global.breakGame.scores[m.chat][player]) global.breakGame.scores[m.chat][player] = 0;
     global.breakGame.scores[m.chat][player]++;
     
+    // ريأكت نجمة الفوز 🌟 على رسالة العضو الصح
+    await conn.sendMessage(m.chat, { react: { text: "🌟", key: m.key } });
+    
     let total = 0;
     for (let id in global.breakGame.scores[m.chat]) {
         total += global.breakGame.scores[m.chat][id];
@@ -66,15 +89,18 @@ breakHandler.before = async (m, { conn }) => {
         }
         
         await conn.sendMessage(m.chat, { 
-            text: `🏆 *الفائزون في التفكيك*\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
+            text: `🏆 *الفائزون في التفكيك*\n${LINE_SEPARATOR}\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
             mentions
         });
         delete global.breakGame.scores[m.chat];
         return;
     }
 
-    await m.reply(`✅ احسنت معاك: ${global.breakGame.scores[m.chat][player]} نقطه`);
-    breakHandler(m, { conn }); // استدعاء نفس الفانكشن الخاصة بالتفكيك فقط
+    await conn.sendMessage(m.chat, {
+        text: `✅ احسنت معاك: ${global.breakGame.scores[m.chat][player]} نقطه`
+    }, { quoted: m });
+    
+    breakHandler(m, { conn, text: '', command: 'تفكيك' });
 };
 
 breakHandler.usage = ["تفكيك"];

@@ -9,7 +9,7 @@ const { data } = JSON.parse(res);
   caption: `# Boy 🚹`,
   buttons: [
 
-        { name: "cta_url", params: { display_text: "📎╎ قــنــاتــي ", url: "https://whatsapp.com/channel/0029Vb3UUKz3QxS3bgWmTc3x" } },
+        { name: "cta_url" },
 
   ], 
   mentions: [m.sender],
@@ -33,7 +33,7 @@ return await conn.sendButtonNormal(m.chat, {
   mentions: [m.sender],
   newsletter: {
       name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-      jid: '120363225356834044@newsletter'
+      jid: ''
     },
 }, global.reply_status)
 

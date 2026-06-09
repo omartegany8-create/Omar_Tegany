@@ -1,62 +1,38 @@
-/*
-code: game arrange / tarkeb
-by: 𝐓𝐨𝐣𝐢 & Gemini
-*/
-
-const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
-
+// تغيير اسم الفانكشن لـ arrangeHandler لمنع التضارب نهائياً
 async function arrangeHandler(m, { conn, text, command }) {
     if (!global.arrangeGame) global.arrangeGame = { games: {}, scores: {} };
 
-    const args = (text || '').trim().toLowerCase().split(' ');
-    const cmd = args[0];
-
-    // ميزة الحذف لمنع التكرار والبدء من جديد
-    if (cmd === 'حذف' || cmd === 'delete') {
-        if (!global.arrangeGame.games[m.chat]) return m.reply("❌ لا توجد لعبة تركيب نشطة لإلغائها حالياً!");
-        if (global.arrangeGame.games[m.chat].timeout) clearTimeout(global.arrangeGame.games[m.chat].timeout);
-        delete global.arrangeGame.games[m.chat];
-        return m.reply("🗑️ تم إلغاء وحذف لعبة التركيب بنجاح! يمكنك البدء من جديد الآن.");
-    }
-
     if (global.arrangeGame.games[m.chat]) {
-        return m.reply(`❌ هناك جولة قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
+        clearTimeout(global.arrangeGame.games[m.chat].timeout);
+        delete global.arrangeGame.games[m.chat];
     }
 
-    // ريأكت بازل أيقونة التركيب 🧩 عند طلب الأمر
-    await conn.sendMessage(m.chat, { react: { text: "🧩", key: m.key } });
+    // ريأكت البدء الفخم للتركيب 🀄
+    await conn.sendMessage(m.chat, { react: { text: "🀄", key: m.key } });
 
-    try {
-        // جلب قائمة الكلمات
-        const data = await (await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-تفكيك.json")).json();
-        const q = data[Math.floor(Math.random() * data.length)];
-        
-        // هنا بنضمن إن الكلمة تتبعت نظيفة وصحيحة
-        const targetWord = q.response.trim();
-
-        m.reply(`
+    // جلب قائمة الكلمات من رابط JSON أونلاين
+    const data = await (await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-تفكيك.json")).json();
+    const q = data[Math.floor(Math.random() * data.length)];
+    
+    // البوت هيعرض الكلمة كاملة وصحيحة والمطلوب كتابتها بسرعة
+    m.reply(`
 ╭─┈─┈─┈─⟞🧩⟝─┈─┈─┈─╮
-┃ *⌯︙ ${targetWord}*
+┃ *⌯︙ ${q.response}*
 ╰─┈─┈─┈─⟞⚙️⟝─┈─┈─┈─╯
-${LINE_SEPARATOR}
 > _*اكتب الكلمة السابقة بسرعة وبنفس الحروف لتكسب نقطة! معاك ٣٠ ثانية قبل انتهاء الجولة*_`);
-        
-        if (!global.arrangeGame.scores[m.chat]) global.arrangeGame.scores[m.chat] = {};
-        
-        global.arrangeGame.games[m.chat] = {
-            answer: targetWord.toLowerCase(), // حفظ الإجابة بشكل صحيح للمقارنة
-            timeout: setTimeout(() => {
-                if (global.arrangeGame.games[m.chat]) {
-                    delete global.arrangeGame.games[m.chat];
-                    delete global.arrangeGame.scores[m.chat];
-                    m.reply("`⏰: انتهى الوقت`");
-                }
-            }, 30000)
-        };
-    } catch (e) {
-        console.error(e);
-        m.reply("❌ حدث خطأ أثناء جلب كلمات لعبة التركيب، جرب مرة أخرى.");
-    }
+    
+    if (!global.arrangeGame.scores[m.chat]) global.arrangeGame.scores[m.chat] = {};
+    
+    global.arrangeGame.games[m.chat] = {
+        answer: q.response.trim(), // الإجابة هي نفس الكلمة المعروضة ونظيفة
+        timeout: setTimeout(() => {
+            if (global.arrangeGame.games[m.chat]) {
+                delete global.arrangeGame.games[m.chat];
+                delete global.arrangeGame.scores[m.chat];
+                m.reply("`⏰: انتهى الوقت`");
+            }
+        }, 30000)
+    };
 }
 
 arrangeHandler.before = async (m, { conn }) => {
@@ -64,19 +40,15 @@ arrangeHandler.before = async (m, { conn }) => {
 
     const game = global.arrangeGame.games[m.chat];
     const player = m.sender;
-    const userAnswer = m.text.trim().toLowerCase();
     
-    // التحقق الصارم من الإجابة لمنع التجميد والاستجابة الخاطئة
-    if (userAnswer !== game.answer) return;
+    // التحقق من الإجابة (تطابق الكلمة بالملّي)
+    if (m.text.trim() !== game.answer) return;
 
     clearTimeout(game.timeout);
     delete global.arrangeGame.games[m.chat];
 
     if (!global.arrangeGame.scores[m.chat][player]) global.arrangeGame.scores[m.chat][player] = 0;
     global.arrangeGame.scores[m.chat][player]++;
-    
-    // ريأكت نجمة الفوز 🌟 على رسالة العضو اللي جاوب صح فوراً
-    await conn.sendMessage(m.chat, { react: { text: "🌟", key: m.key } });
     
     let total = 0;
     for (let id in global.arrangeGame.scores[m.chat]) {
@@ -101,25 +73,21 @@ arrangeHandler.before = async (m, { conn }) => {
         }
         
         await conn.sendMessage(m.chat, { 
-            text: `🏆 *الفائزون في لـعـبـة الـتـركـيـب والـدمـج*\n${LINE_SEPARATOR}\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
+            text: `🏆 *الفائزون في لـعـبـة الـتـركـيـب*\n\n${sorted.join('\n')}\n\n🏅 @${winner.split('@')[0]} حصل على +500 XP و 🍪 +10 كوكيز`,
             mentions
         });
         delete global.arrangeGame.scores[m.chat];
-        return true;
+        return;
     }
 
-    await conn.sendMessage(m.chat, {
-        text: `✅ احسنت معاك: ${global.arrangeGame.scores[m.chat][player]} نقطه`
-    }, { quoted: m });
+    await m.reply(`✅ احسنت معاك: ${global.arrangeGame.scores[m.chat][player]} نقطه`);
     
-    // استدعاء جولة جديدة تلقائياً بدون تضارب
+    // استدعاء الميثود بشكل برمجى سليم ومضمون للجولة التالية
     await new Promise(resolve => setTimeout(resolve, 1500));
     arrangeHandler(m, { conn, text: '', command: 'تركيب' });
-    return true;
 };
 
 arrangeHandler.usage = ["تركيب"];
 arrangeHandler.category = "games";
 arrangeHandler.command = ['تركيب', 'دمج'];
 export default arrangeHandler;
-    

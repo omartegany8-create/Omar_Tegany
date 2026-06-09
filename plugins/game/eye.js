@@ -4,8 +4,8 @@ by: 𝐓𝐨𝐣𝐢 & Gemini
 */
 
 const MAX_ROUNDS = 10;
+const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
 
-// إضافة مصفوفة شخصيات أنمي غنية مع عيون جوجوتسو كايسين المشهورة
 const NAMES = [
   "ايرين", "نيزوكو", "سوكونا", "موازن", "كيلوا", "غون", "ايتاتشي", "ساسكي", "دابي", "اوبيتو",
   "نوبارا", "ليفاي", "يوتا", "فريدا", "شيده", "ياماتو", "نامي", "ايمو", "انيا", "جينبي",
@@ -24,7 +24,6 @@ const getPrize = (rank) => {
   return { xp: 100, cookies: 2, emoji: "⭐" };
 };
 
-// الدالة الأساسية لتشغيل الجولات تلقائياً
 async function runGame(m, conn, round) {
   const chatId = m.chat;
   const g = global.gameEye[chatId];
@@ -45,7 +44,7 @@ async function runGame(m, conn, round) {
       }
       
       await conn.sendMessage(chatId, {
-        text: `🏆 *انتهت لعبة العين بالكامل!*\n\n*ترتيب الفائزين:*\n${prizes.join('\n')}`,
+        text: `🏆 *انتهت لعبة العين بالكامل!*\n${LINE_SEPARATOR}\n\n*ترتيب الفائزين:*\n${prizes.join('\n')}`,
         mentions: sorted.map(s => s[0])
       });
     } else if (g) {
@@ -64,7 +63,7 @@ async function runGame(m, conn, round) {
     const wrong = shuffle([...NAMES]).filter(n => n !== char.name).slice(0, 3);
     const opts = shuffle([char.name, ...wrong]);
     
-    const caption = `👁️ *خـمـن هـذه الشخصية [ الجولة: ${round} / ${MAX_ROUNDS} ]* 👁️\n\n1️⃣ ⌯︙ ${opts[0]}\n2️⃣ ⌯︙ ${opts[1]}\n3️⃣ ⌯︙ ${opts[2]}\n4️⃣ ⌯︙ ${opts[3]}\n\n> _رد على الرسالة باسم الشخصية الصحيح ككتابة! ⏱️ 30 ثانية_`;
+    const caption = `👁️ *خـمـن لـمـن هـذه الـعـيـن [ الجولة: ${round} / ${MAX_ROUNDS} ]* 👁️\n${LINE_SEPARATOR}\n\n1️⃣ ⌯︙ ${opts[0]}\n2️⃣ ⌯︙ ${opts[1]}\n3️⃣ ⌯︙ ${opts[2]}\n4️⃣ ⌯︙ ${opts[3]}\n\n${LINE_SEPARATOR}\n> _رد على الرسالة باسم الشخصية الصحيح ككتابة! ⏱️ 30 ثانية_`;
     
     const msg = await conn.sendMessage(chatId, {
       image: { url: char.img },
@@ -83,7 +82,6 @@ async function runGame(m, conn, round) {
           
           await conn.sendMessage(chatId, { text: `⏰ *انتهى الوقت!* الإجابة الصحيحة هي: *${ans}*` });
           
-          // الانتقال التلقائي للجولة القادمة عند انتهاء الوقت
           await new Promise(resolve => setTimeout(resolve, 2000));
           runGame(m, conn, round + 1);
         }
@@ -96,12 +94,25 @@ async function runGame(m, conn, round) {
   }
 }
 
-const handler = async (m, { conn }) => {
+const handler = async (m, { conn, text, command }) => {
   const chatId = m.chat;
   if (!global.gameEye) global.gameEye = {};
   
-  // حماية لمنع تكرار الأمر أثناء تشغيل الجولة
-  if (global.gameEye[chatId]) return m.reply("❌ هناك لعبة عين قائمة بالفعل في هذا الجروب!");
+  const args = (text || '').trim().toLowerCase().split(' ');
+  const cmd = args[0];
+
+  // ميزة الحذف لمنع التكرار والبدء من جديد
+  if (cmd === 'حذف' || cmd === 'delete') {
+    if (!global.gameEye[chatId]) return m.reply("❌ لا توجد لعبة عين نشطة لإلغائها حالياً!");
+    if (global.gameEye[chatId].current?.timer) clearTimeout(global.gameEye[chatId].current.timer);
+    delete global.gameEye[chatId];
+    return m.reply("🗑️ تم إلغاء وحذف لعبة العين بنجاح! يمكنك البدء من جديد الآن.");
+  }
+
+  if (global.gameEye[chatId]) return m.reply(`❌ هناك لعبة عين قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
+
+  // ريأكت أيقونة اللعبة عند البدء
+  await conn.sendMessage(chatId, { react: { text: "👁️", key: m.key } });
 
   global.gameEye[chatId] = { round: 0, scores: {}, current: null };
   runGame(m, conn, 1);
@@ -114,28 +125,27 @@ handler.before = async (m, { conn }) => {
   const cur = g.current;
   const answer = m.text.toLowerCase().trim();
   
-  // التأكد إن العضو بيرد على رسالة البوت وباسمه صح
   if (m.quoted?.id !== cur.id) return;
   
   if (answer === cur.answer) {
     clearTimeout(cur.timer);
-    g.current = null; // قفل استقبال الإجابات للجولة الحالية
+    g.current = null;
     
     g.scores[m.sender] = (g.scores[m.sender] || 0) + 1;
     
-    // الرد مباشرة على رسالة العضو مع المنشن والتاغ
+    // ريأكت الفوز 🎉 على رسالة العضو الصح بالملّي
+    await conn.sendMessage(m.chat, { react: { text: "🎉", key: m.key } });
+    
     await conn.sendMessage(m.chat, {
       text: `🎉 *إجابة صحيحة!* \n\nأحسنت يا @${m.sender.split('@')[0]} جبت اسم الشخصية صح 🏆\n⚔️ نقاطك الحالية: *${g.scores[m.sender]} نقطة*\n\n⏳ _استعدوا للجولة القادمة..._`,
       mentions: [m.sender]
-    }, { quoted: m }); // هنا بيخليه يرد على رسالة العضو بالملّي
+    }, { quoted: m });
     
-    // الانتقال التلقائي للجولة التالية بعد 3 ثواني حماسية
     const nextRound = g.round + 1;
     await new Promise(resolve => setTimeout(resolve, 3000));
     runGame(m, conn, nextRound);
     return true;
   } else if (cur.opts.includes(answer)) {
-    // لو اختار اسم من الاختيارات بس غلط
     await m.reply("❌ *إجابة خاطئة!* حاول مرة أخرى وركز في تفاصيل العين.");
     return true;
   }

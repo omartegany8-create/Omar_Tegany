@@ -3,7 +3,6 @@ code: game break
 by: 𝐓𝐨𝐣𝐢 & Gemini
 */
 
-const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
 
 async function breakHandler(m, { conn, text, command }) {
     if (!global.breakGame) global.breakGame = { games: {}, scores: {} };
@@ -24,17 +23,18 @@ async function breakHandler(m, { conn, text, command }) {
     }
 
     // ريأكت بازل أيقونة التفكيك 🧩
-    await conn.sendMessage(m.chat, { react: { text: "🧩", key: m.key } });
+    await conn.sendMessage(m.chat, { react: { text: "🔨", key: m.key } });
 
     const data = await (await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-تفكيك.json")).json();
     const q = data[Math.floor(Math.random() * data.length)];
     
     m.reply(`
 ╭─┈─┈─┈─⟞🔨⟝─┈─┈─┈─╮
-┃ *⌯︙ ${q.question}*
-╰─┈─┈─┈─⟞⚙️⟝─┈─┈─┈─╯
+┃ *⌯ فكك الكلمة دي︙ ${q.question}*
+
 ${LINE_SEPARATOR}
-> _*اكتب الكلام بسرعه عشان تتحسبلك نقطه + بعد ٣٠ ثانيه لو مردتش اللعبه هتنتهي*_`);
+> _*اكتب الكلام بسرعه عشان تتحسبلك نقطه + بعد ٣٠ ثانيه لو مردتش اللعبه هتنتهي*_
+╰─┈─┈─┈─⟞🎮⟝─┈─┈─┈─╯`);
     
     if (!global.breakGame.scores[m.chat]) global.breakGame.scores[m.chat] = {};
     
@@ -65,7 +65,7 @@ breakHandler.before = async (m, { conn }) => {
     global.breakGame.scores[m.chat][player]++;
     
     // ريأكت نجمة الفوز 🌟 على رسالة العضو الصح
-    await conn.sendMessage(m.chat, { react: { text: "🌟", key: m.key } });
+    await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
     
     let total = 0;
     for (let id in global.breakGame.scores[m.chat]) {

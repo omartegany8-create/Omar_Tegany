@@ -34,7 +34,7 @@ async function handler(m, { conn, text, command }) {
     // ريأكت التفعيل الفخم 💣
     await conn.sendMessage(m.chat, { react: { text: "💣", key: m.key } });
 
-    await m.reply(`🎮 *حلبة المتفجرات الأسطورية بدأت!* 💣\n\nالميدان محجوز بالكامل للرائد: @${m.sender.split('@')[0]}\n\n1️⃣ | 2️⃣ | 3️⃣\n4️⃣ | 5️⃣ | 6️⃣\n7️⃣ | 8️⃣ | 9️⃣\n\n> *أمامك 9 مناطق مصيرية! اكتب رقم المربع من [1 إلى 9] لتطهيره، إياك ولمس القنابل!*`, null, { mentions: [m.sender] });
+    await m.reply(`🎮 *حلبة المتفجرات بدأت!* 💣\n\ @${m.sender.split('@')[0]} يلعب الآن \n\n1️⃣ | 2️⃣ | 3️⃣\n4️⃣ | 5️⃣ | 6️⃣\n7️⃣ | 8️⃣ | 9️⃣\n\n> *أمامك 9 مناطق! اكتب رقم المربع من [1 إلى 9]، إياك ولمس القنابل 👽💣!*`, null, { mentions: [m.sender] });
 }
 
 handler.before = async (m, { conn }) => {
@@ -74,7 +74,7 @@ handler.before = async (m, { conn }) => {
         
         const grid = `${finalBoard[0]} | ${finalBoard[1]} | ${finalBoard[2]}\n${finalBoard[3]} | ${finalBoard[4]} | ${finalBoard[5]}\n${finalBoard[6]} | ${finalBoard[7]} | ${finalBoard[8]}`;
         
-        await m.reply(`💥 *💥 كـبـووووم!! لقد تفجرت في المنطقة [ ${move} ]* 💥\n\n${grid}\n\n☠️ حظاً أوفر المرة القادمة يا أسطورة، خسرت الكوكيز التي جمعتها في هذه الجولة!`);
+        await m.reply(`💥 *💥 كـبـووووم!! لقد تفجرت في المنطقة [ ${move} ]* 💥\n\n${grid}\n\n☠️💣 حظاً أوفر المرة القادمة، لقد تفجرت وخسرت الكوكيز التي جمعتها في هذه الجولة!`);
         delete global.bombsGame[chatId];
         return true;
     }
@@ -91,7 +91,7 @@ handler.before = async (m, { conn }) => {
             global.db.users[m.sender].xp = (global.db.users[m.sender].xp || 0) + 50;
         }
 
-        await m.reply(`🍪 *رائع! عثرت على إمدادات كوكيز في المنطقة [ ${move} ]*\n\n🎁 حصلت على: *+${prize} كوكيز* و *+50 XP*\n📊 مجموع ما جمعته حتى الآن: *${game.scoreCookies} كوكيز*\n\n> _تابع التطهير واكتب رقم المربع التالي..._`);
+        await m.reply(`🍪 *رائع! عثرت على إمدادات كوكيز في المنطقة [ ${move} ]*\n\n🎁 حصلت على: *+${prize} كوكيز* و *+50 XP*\n📊 مجموع ما جمعته حتى الآن: *${game.scoreCookies} كوكيز*\n\n> _تابع الاستبعاد واكتب رقم المربع التالي..._`);
     }
 
     // 3. حالة المنطقة الآمنة الفارغة ⬜
@@ -119,7 +119,7 @@ handler.before = async (m, { conn }) => {
             global.db.users[m.sender].xp = (global.db.users[m.sender].xp || 0) + 300;
         }
 
-        await m.reply(`🏆 *نــصــر ســاحــق!!* 🏆\n\nلقد قمت بتطهير الميدان بالكامل وتفادي القنابل بنجاح أسطوري!\n\n${gridWin}\n\n🏅 مكافأة الفوز الكبرى: *+300 XP*\n🍪 إجمالي الكوكيز المكتسبة: *+${game.scoreCookies} كوكيز* \n\nعاش يا كينج المتفجرات! 😎🔥`);
+        await m.reply(`🏆 *نــصــر ســاحــق!!* 🏆\n\nلقد قمت بستبعاد المنطقة بالكامل وتفادي القنابل بنجاح . عاش والله 🤩🔥!\n\n${gridWin}\n\n🏅 مكافأة الفوز الكبرى: *+300 XP*\n🍪 إجمالي الكوكيز المكتسبة: *+${game.scoreCookies} كوكيز* \n\nعاش يا كينج المتفجرات! 😎🔥`);
         delete global.bombsGame[chatId];
     }
 

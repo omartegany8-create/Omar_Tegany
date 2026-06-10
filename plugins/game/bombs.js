@@ -74,7 +74,7 @@ handler.before = async (m, { conn }) => {
         
         const grid = `${finalBoard[0]} | ${finalBoard[1]} | ${finalBoard[2]}\n${finalBoard[3]} | ${finalBoard[4]} | ${finalBoard[5]}\n${finalBoard[6]} | ${finalBoard[7]} | ${finalBoard[8]}`;
         
-        await m.reply(`💥 *💥 كـبـووووم!! لقد تفجرت في المنطقة [ ${move} ]* 💥\n\n${grid}\n\n☠️💣 حظاً أوفر المرة القادمة، لقد تفجرت وخسرت الكوكيز التي جمعتها في هذه الجولة!`);
+        await m.reply(`💥 *💥 بوو💥ووم!! لقد تفجرت في المنطقة [ ${move} ]* 💥\n\n${grid}\n\n☠️💣 حظاً أوفر المرة القادمة، لقد تفجرت وخسرت الكوكيز التي جمعتها في هذه الجولة!`);
         delete global.bombsGame[chatId];
         return true;
     }

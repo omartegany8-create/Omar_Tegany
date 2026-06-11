@@ -1,3 +1,8 @@
+/*
+code: premium fast writing game (بدون زخارف - نظام تفاعل بشري ذكي)
+by: 𝐓𝐨جي & Gemini
+*/
+
 const MAX_ROUNDS = 10;
 
 // قائمة الكلمات المنوعة والمطورة لمنافسة نارية
@@ -27,18 +32,24 @@ async function sendWriteQuestion(m, conn, chatId) {
     const randomWord = wordsList[Math.floor(Math.random() * wordsList.length)];
     game.answer = randomWord.trim();
 
-    const msgText = `✍️ *لعبة الكتابة السريعة الاسطورية* ⚡\n\nجولة رقم: [ *${game.round} من ${MAX_ROUNDS}* ] 🎲\n────────────────\n\n🔥 *أنقش الكلمة دي بأسـرع سرعة عندك:* \n\n👉🏻  *${randomWord}* 👈🏻\n\n────────────────\n> _*اكتب الكلمة طلقة عشان النقطة تتحسبلك!*_\n⏱️ _معاك 30 ثانية أشوف سرعتكم!_`;
+    const msgText = `📌 *تحدي الكتابة الأسطوري السريع* ✍️⚡\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n🔥 *انقش الكلمة دي بأسرع سرعة عندك وطيران بالشات:* \n\n👉🏻  *${randomWord}* 👈🏻\n\n_اكتب الكلمة صح وبدون غلطة إملائية عشان تقفش النقطة!_`;
     
     await conn.sendMessage(chatId, { text: msgText });
 
     if (game.timeout) clearTimeout(game.timeout);
     game.timeout = setTimeout(async () => {
-        if (global.writeGame?.games[chatId]) {
-            delete global.writeGame.games[chatId];
-            delete global.writeGame.scores[chatId];
+        if (global.writeGame?.games[chatId] && global.writeGame.games[chatId].round === game.round) {
+            global.writeGame.games[chatId].answer = "";
+            
             await conn.sendMessage(chatId, {
-                text: `⏰ *انتهى الوقت ومحدش كتب حاجة!* 🦦\nمالكو كدا انهارده مش مظبوطين؟ إيدكم مقطوعة ولا إيه؟ 😂\n\n> _عايز تصحصح الشات تاني؟ اكتب 👈🏻 .كتابه_`
+                text: `⏰ *انتهى الوقت ومحدش لحق يكتب الكلمة!*\n\nالكلمة المطلوبة كانت: *${randomWord}*\n\nنجهز الجولة اللي بعدها حالا صحصحوا معايا..`
             });
+
+            if (game.round < MAX_ROUNDS) {
+                setTimeout(() => sendWriteQuestion(m, conn, chatId), 2500);
+            } else {
+                finishWriteGame(m, conn, chatId);
+            }
         }
     }, 30000);
 }
@@ -53,13 +64,13 @@ async function finishWriteGame(m, conn, chatId) {
     let finalScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
     if (finalScores.length === 0) {
-        await conn.sendMessage(chatId, { text: "🏁 *خلصت الـ 10 جولات ومحدش عبرنا بنقطة واحدة.. كسلانين بشكل!* 🦦" });
+        await conn.sendMessage(chatId, { text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات كاملة!*\n\nبس للأسف مفيش ولا كيبورد اتحرك انهارده.. الجروب كلو نايم! 🦦😂` });
         delete global.writeGame.games[chatId];
         delete global.writeGame.scores[chatId];
         return;
     }
 
-    let leaderboard = finalScores.map(([user, score], idx) => {
+    const leaderboard = finalScores.map(([user, score], idx) => {
         const prize = getWritePrize(idx);
         
         if (global.db?.users[user]) {
@@ -67,13 +78,13 @@ async function finishWriteGame(m, conn, chatId) {
             global.db.users[user].cookies = (global.db.users[user].cookies || 0) + prize.cookies;
         }
 
-        return `${prize.emoji} *المركز ${idx + 1}:* @${user.split('@')[0]}\n   🎯 سرعة وكتب صح: *${score} جولات* | 🎁 جوائز: *+${prize.xp} XP* & *🍪 +${prize.cookies} كوكيز*\n────────────────`;
-    }).join('\n');
+        return `${prize.emoji} *المركز ${idx + 1}:* @${user.split('@')[0]}\n• جولات الفوز: [ *${score} جولات* ]\n• المكافأة المضافة: [ *+${prize.xp} XP* | *🍪 +${prize.cookies} كوكيز* ]`;
+    }).join('\n\n');
 
     const winner = finalScores[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *انتهت جولات تحدي الكتابة السريعة!* ✍️⚡\n\nإليكم النتائج :\n\n────────────────\n${leaderboard}\n🏅 *ألف مبروك للمكتسح @${winner.split('@')[0]}.. إيدك صروخ !* 😉🔥`,
+        text: `🏁 *لوحة شرف الأبطال - نهاية تحدي الكتابة* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا صواريخ الكيبورد! الصدارة @${winner.split('@')[0]} إيدك سابقة الطلقة كالعادة!* 😉🔥`,
         mentions: finalScores.map(e => e[0])
     });
 
@@ -88,21 +99,19 @@ async function writeHandler(m, { conn, text, command }) {
     const args = (text || '').trim().toLowerCase().split(' ');
     const cmd = args[0];
 
-    // ميزة الحذف والإلغاء الفوري للأمر (.كتابه حذف)
     if (cmd === 'حذف' || cmd === 'انهاء' || cmd === 'delete') {
-        if (!global.writeGame.games[chatId]) return m.reply("❌ مفيش لعبة كتابة شغالة عشان أحذفها يسطا!");
+        if (!global.writeGame.games[chatId]) return m.reply("❌ مفيش جولة كتابة نشطة حالياً عشان أحذفها!");
         if (global.writeGame.games[chatId].timeout) clearTimeout(global.writeGame.games[chatId].timeout);
         delete global.writeGame.games[chatId];
         delete global.writeGame.scores[chatId];
-        return m.reply("🗑️ *أبشر! تم إلغاء وحذف لعبة الكتابة.*");
+        return m.reply("🗑️ *تم إنهاء وإغلاق تحدي الكتابة وتصفير لوحة السرعة بنجاح.*");
     }
 
     if (global.writeGame.games[chatId]) {
-        return m.reply(`⚠️ يسطا في جولة كتابة شغالة في الجروب حالياً!\nاكتب 👈🏻 *.${command} حذف* لو عايز تقفلها وتبدأ على مية بيضا.`);
+        return m.reply(`⚠️ في تحدي كتابة شغال حالياً في الجروب!\n\nاكتب *.${command} حذف* لو حابب تقفله وتبدأ جولة مروقة على مية بيضا.`);
     }
 
-    // ريأكت القلم عند البدء ✏️
-    await conn.sendMessage(chatId, { react: { text: "✏️", key: m.key } });
+    await conn.sendMessage(chatId, { react: { text: "✍️", key: m.key } });
 
     global.writeGame.games[chatId] = {
         round: 0,
@@ -111,7 +120,7 @@ async function writeHandler(m, { conn, text, command }) {
     };
     global.writeGame.scores[chatId] = {};
 
-    await m.reply(`✍️ *تحدي لعبة الكتابة يلا نشوف مين اسرع!* ⚡\nاللعبة عبارة عن *10 جولات*.. الكلمة هتظهر وأسرع واحد هيكتبها هياخد النقطة والجوائز!\n\nالجولة الأولى ... 🚀🔥`);
+    await m.reply(`⚡ *تحدي صواريخ الكيبورد والسرعة بدأ!*\n\nالتحدي مكون من *10 جولات* حماسية.. الكلمة هتظهر وأسرع واحد يكتبها صح بالشات هيقفل النقط والجوائز..\n\nالجولة الأولى 👇🏻... 🚀🔥`);
 
     setTimeout(() => sendWriteQuestion(m, conn, chatId), 2000);
 }
@@ -128,33 +137,41 @@ writeHandler.before = async (m, { conn }) => {
 
     const userInput = m.text.trim();
 
-    // حالة الإجابة الصحيحة والسريعة
     if (userInput === game.answer) {
         clearTimeout(game.timeout);
-        game.answer = ""; // قفل الإجابة فوراً لمنع التكرار
+        game.answer = ""; 
         
         scores[player] = (scores[player] || 0) + 1;
 
         await conn.sendMessage(chatId, { react: { text: "⚡", key: m.key } });
 
-        let replyMsg = `🎉 *سرعة خياليه ماشاء الله عليك ! كتبتها صح* ⚡\n\nعاش  @${player.split('@')[0]} نقاطك الحالية بقت: [ *${scores[player]} نقطة* ] 🎯\n\n`;
+        let replyMsg = `🎉 *سرعة خيالية ما شاء الله عليك! لقطتها طيران*\n\nعاش يا @${player.split('@')[0]} كتبتها صح وسكورك الحالي: [ *${scores[player]} نقطة* ] 🎯\n\n`;
 
         const nextRound = game.round + 1;
         if (nextRound <= MAX_ROUNDS) {
-            replyMsg += `⏳ *استعدوا.. الكلمة الجاية للجولة رقم (${nextRound} / 10) نازلة دلوقتي...*`;
+            replyMsg += `⏳ *استعدوا.. الكلمة الجاية للجولة رقم (${nextRound} / 10) نازلة حالا في الشات...*`;
             await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => sendWriteQuestion(m, conn, chatId), 3000);
         } else {
-            replyMsg += `🏁 *دي كانت الجولة الأخيرة! ثواني وبطلعلكم نتائح اسرع اعضاء ف الجروب...*`;
+            replyMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي السريع! النتائج 👇🏻...*`;
             await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => finishWriteGame(m, conn, chatId), 2000);
         }
         return true;
     } 
     
-    // تلميح لو العضو كتب كلمة قريبة أو غط في الحروف (ومش أمر بوت)
+    // فحص الكلمات القريبة الغلط (عشان التفاعل البشري التلقائي والتريّقة الحية)
     else if (userInput.length >= game.answer.length - 1 && userInput.length <= game.answer.length + 1 && !userInput.startsWith('.')) {
-        await conn.sendMessage(chatId, { react: { text: "❌", key: m.key } });
+        await conn.sendMessage(chatId, { react: { text: "😐", key: m.key } });
+        
+        const writeRoasts = [
+            "❌ *حرف واحد بوظ الدنيا!* صوابعك دخلت في بعضها ولا إيه؟ ركز وحاول تاني بسرعه! 😂🔥",
+            "❌ *غلطة كيبورد ضيعت النقطة!* صحصح كدا الحروف هربت منك، حاول تاني بسرعة!",
+            "❌ *قريب جداً بس مش هي!* السرعة لوحدها مش كفاية ركز في الحروف يا فنان!"
+        ];
+        const randomRoast = writeRoasts[Math.floor(Math.random() * writeRoasts.length)];
+        await m.reply(randomRoast);
+        return true;
     }
 
     return false;

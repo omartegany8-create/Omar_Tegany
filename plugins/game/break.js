@@ -1,3 +1,8 @@
+/*
+code: premium word breaking game (بدون زخارف - نظام تفاعل بشري ذكي)
+by: 𝐓𝐨جي & Gemini
+*/
+
 const MAX_ROUNDS = 10;
 
 // دالة مخصصة لجلب سؤال جديد وعرضه بشكل فخم ومنسق
@@ -11,31 +16,45 @@ async function sendBreakQuestion(m, conn, chatId) {
     }
 
     try {
-        const response = await fetch("https://raw.githubusercontent.com/Xov445447533/Xov11111/master/src/JSON/venom-%D8%AA%D9%81%D9%83%D9%8A%D9%84%D9%83.json");
+        // تحديث الرابط لسيرفر مستقر ومضمون لأسئلة التفكيك والتركيب
+        const response = await fetch("https://raw.githubusercontent.com/Afghany/Premium-Files/main/games/tefkeek.json");
+        if (!response.ok) throw new Error("Network response was not ok");
+        
         const data = await response.json();
         const q = data[Math.floor(Math.random() * data.length)];
 
-        game.answer = q.response.trim();
+        // ظبط قراءة المفاتيح حسب نظام ملف الـ JSON المستقر (الكلمة وتفكيكها الصحيح)
+        game.question = q.question || q.word; 
+        game.answer = (q.response || q.result || q.answer).trim();
 
-        const msgText = `🔨 *لعبة التفكيك* 🎮\n\nجولة رقم: [ *${game.round} من ${MAX_ROUNDS}* ] 🎲\n\n🧩 *فـكـك الـكـلـمـة دي ف أسـرع وقـت:* \n👉🏻  *${q.question}* 👈🏻\n\n────────────────\n⏱️ _معاك 30 ثانية لو الشات نام ومحدش فككها اللعبة هتقفل تلقائي!_`;
+        const msgText = `📌 *تحدي تفكيك الكلمات السريع* 🔨\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n🧩 *أسرع واحد يفكك الكلمة دي فوراً بالشات:* \n\n👉🏻  *${game.question}* 👈🏻\n\n_اكتب الحروف متباعدة وبدون أي زخرفة عشان النقطة تتحسبلك بسرعة!_`;
         
-        await conn.sendMessage(chatId, { text: msgText });
+        const msg = await conn.sendMessage(chatId, { text: msgText });
+        game.msgId = msg.key.id;
 
-        // إعادة تشغيل التايم أوت للجولة الجديدة
         if (game.timeout) clearTimeout(game.timeout);
         game.timeout = setTimeout(async () => {
-            if (global.breakGame?.games[chatId]) {
-                delete global.breakGame.games[chatId];
-                delete global.breakGame.scores[chatId];
+            if (global.breakGame?.games[chatId] && global.breakGame.games[chatId].round === game.round) {
+                const correctAns = global.breakGame.games[chatId].answer;
+                global.breakGame.games[chatId].answer = "";
+                
                 await conn.sendMessage(chatId, {
-                    text: `💤 *يا خسارة! انتهى الوقت ومحدش فكك الكلمة..*🦦\n*تم إنهاء اللعبة لعدم التفاعل.*\n\n> 💡 _عايز تصحصح الجروب؟ اكتب 👈🏻 .تفكيك_`
+                    text: `⏰ *انتهى الوقت ومحدش لحق يفككها!*\n\nالتفكيك الصحيح كان: *${correctAns}*\n\nنجهز الجولة اللي بعدها حالا صحصحوا معايا..`
                 });
+
+                if (game.round < MAX_ROUNDS) {
+                    setTimeout(() => sendBreakQuestion(m, conn, chatId), 2500);
+                } else {
+                    finishBreakGame(m, conn, chatId);
+                }
             }
         }, 30000);
 
     } catch (error) {
-        await conn.sendMessage(chatId, { text: "❌ حصل خطأ أثناء جلب الكلمات من السيرفر يسطا!" });
+        console.error(error);
+        await conn.sendMessage(chatId, { text: "❌ حصل خطأ أثناء جلب الكلمات من السيرفر! جرب تشغل اللعبة تاني يسطا." });
         delete global.breakGame.games[chatId];
+        delete global.breakGame.scores[chatId];
     }
 }
 
@@ -49,21 +68,30 @@ async function finishBreakGame(m, conn, chatId) {
 
     let finalScores = Object.entries(scores).sort((a, b) => b[1].correct - a[1].correct);
 
-    let leaderboard = finalScores.map(([user, data], idx) => {
+    if (finalScores.length === 0) {
+        await conn.sendMessage(chatId, { text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات كاملة!*\n\nبس للأسف محدش فيكم جمع ولا نقطة.. الجروب كله كسلان ورايح عليه نومة! 🦦` });
+        delete global.breakGame.games[chatId];
+        delete global.breakGame.scores[chatId];
+        return;
+    }
+
+    const leaderboard = finalScores.map(([user, data], idx) => {
         let totalAttempts = data.correct + data.wrong;
         let winRatio = totalAttempts > 0 ? Math.round((data.correct / totalAttempts) * 100) : 0;
+        let rankEmoji = idx === 0 ? "🏆" : idx === 1 ? "🥈" : "⭐";
         
-        // توزيع الجوائز المالية والـ XP للأبطال
         if (global.db?.users[user]) {
             global.db.users[user].xp = (global.db.users[user].xp || 0) + (data.correct * 50);
             global.db.users[user].cookies = (global.db.users[user].cookies || 0) + (data.correct * 1);
         }
 
-        return `${idx + 1}️⃣ ⇦ @${user.split('@')[0]}\n   🎯 تفكيك صحيح: *${data.correct}*\n   ❌ محاولات خاطئة: *${data.wrong}*\n   📊 نسبة السرعة: *${winRatio}%*\n   🏅 الجوائز: *+${data.correct * 50} XP* & *🍪 +${data.correct * 1} كوكيز*\n────────────────`;
-    }).join('\n') || "😔 مفيش أي حد شارك انهارده.. الجروب كسلان وبيروح عليه نومة!";
+        return `${rankEmoji} *المركز ${idx + 1}:* @${user.split('@')[0]}\n• تفكيك صحيح: [ *${data.correct} جولات* ]\n• محاولات خاطئة: [ *${data.wrong} مرة* ]\n• دقة السرعة: [ *${winRatio}%* ]\n• الجوائز المضافة: [ *+${data.correct * 50} XP* | *🍪 +${data.correct * 1} كوكيز* ]`;
+    }).join('\n\n');
+
+    const winner = finalScores[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات من تحدي التفكيك!* 🔨✨\n\nإليكم لوحة أسرع المفككين بالجروب:\n\n────────────────\n${leaderboard}\n🏆 *عاش يا وحوش السرعة والتركيز!* 🪄🔥`,
+        text: `🏁 *لوحة شرف الأبطال - نهاية تحدي التفكيك* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا ابطال السرعة والتركيز! الصدارة انهارده من نصيب @${winner.split('@')[0]} إيدك طلقة متمكن!* 🪄🔥`,
         mentions: finalScores.map(e => e[0])
     });
 
@@ -78,7 +106,6 @@ async function breakHandler(m, { conn, text, command }) {
     const args = (text || '').trim().toLowerCase().split(' ');
     const cmd = args[0];
 
-    // ميزة الحذف الفورية للأمر من قبل أي عضو لمنع التعليق
     if (cmd === 'حذف' || cmd === 'انهاء' || cmd === 'delete') {
         if (!global.breakGame.games[chatId]) return m.reply("❌ مفيش لعبة تفكيك شغالة حالياً عشان أحذفها يسطا!");
         if (global.breakGame.games[chatId].timeout) clearTimeout(global.breakGame.games[chatId].timeout);
@@ -88,13 +115,11 @@ async function breakHandler(m, { conn, text, command }) {
     }
 
     if (global.breakGame.games[chatId]) {
-        return m.reply(`⚠️ يسطا في جولة تفكيك شغالة في الشات!\nاكتب 👈🏻 *.${command} حذف* لو عايز تقفلها وتبدأ من جديد.`);
+        return m.reply(`⚠️ يسطا في جولة تفكيك شغالة طحن حالياً في الشات!\n\nاكتب *.${command} حذف* لو عايز تقفلها وتبدأ على مضافة.`);
     }
 
-    // ريأكت أيقونة التفكيك والبدء
     await conn.sendMessage(chatId, { react: { text: "🔨", key: m.key } });
 
-    // تهيئة بيانات اللعبة للجروب
     global.breakGame.games[chatId] = {
         round: 0,
         answer: "",
@@ -102,7 +127,7 @@ async function breakHandler(m, { conn, text, command }) {
     };
     global.breakGame.scores[chatId] = {};
 
-    await m.reply(`🔨 *مستعدين ؟ تحدي التفكيك بدأ!* 🎮\nاللعبة مكونة من *10 جولات حماسية ورا بعض*.. أسرع واحد بيكتب الإجابة الصح هو اللي بياخد النقطة والجوائز!\n\nالجولة الأولى نازلة حالا... 🚀🔥`);
+    await m.reply(`🔨 *تحدي تفكيك الكلمات السريع بدأ!*\n\nالتحدي مكون من *10 جولات متتالية*، ركز في الكلمة وفكك حروفها طياري بالشات عشان تقفش النقط والجوائز..\n\nالجولة الأولى نازلة حالا في السكة... 🚀🔥`);
 
     setTimeout(() => sendBreakQuestion(m, conn, chatId), 2000);
 }
@@ -117,7 +142,6 @@ breakHandler.before = async (m, { conn }) => {
 
     if (!game.answer) return false;
 
-    // تهيئة سجل اللاعب لو أول مرة يشارك
     if (!scores[player]) {
         scores[player] = { correct: 0, wrong: 0 };
     }
@@ -125,31 +149,40 @@ breakHandler.before = async (m, { conn }) => {
     const userInput = m.text.trim();
 
     if (userInput === game.answer) {
-        // إجابة صحيحة
         clearTimeout(game.timeout);
-        game.answer = ""; // قفل الإجابة للجولة الحالية منعاً للتكرار
+        game.answer = ""; 
         scores[player].correct += 1;
 
-        await conn.sendMessage(chatId, { react: { text: "✅", key: m.key } });
+        await conn.sendMessage(chatId, { react: { text: "⚡", key: m.key } });
 
-        let replyMsg = `🎉 *عاش يا وحش! لقطتها طلقة* ⚡\nإجابتك صحيحة وعندك دلوقتي: [ *${scores[player].correct} نقطة* ] 🎯\n\n`;
+        let replyMsg = `🎉 *ماشاءالله سريع وجبتها طيران!*\n\nعاش يا @${player.split('@')[0]} التفكيك صح وعندك دلوقتي: [ *${scores[player].correct} نقطة* ] 🎯\n\n`;
 
-        if (game.round < MAX_ROUNDS) {
-            replyMsg += `⏳ *استعدوا.. الجولة القادمة رقم (${game.round + 1}) نازلة حالا...*`;
-            await conn.sendMessage(chatId, { text: replyMsg }, { quoted: m });
+        const nextRound = game.round + 1;
+        if (nextRound <= MAX_ROUNDS) {
+            replyMsg += `⏳ *استعدوا.. الجولة رقم (${nextRound} / 10) نازلة حالا في الشات...*`;
+            await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => sendBreakQuestion(m, conn, chatId), 3000);
         } else {
-            replyMsg += `🏁 *دي كانت الجولة الأخيرة! ثواني وبحسب لكم النتائج النهائية ...*`;
-            await conn.sendMessage(chatId, { text: replyMsg }, { quoted: m });
+            replyMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي! ثواني وبحسب لكم الترتيب النهائي والجوائز...*`;
+            await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => finishBreakGame(m, conn, chatId), 2000);
         }
         return true;
     } 
     
-    // فحص الإجابات الخاطئة (لو الكلمة قريبة في الطول من الإجابة ومش أمر بوت)
+    // فحص الإجابات الخاطئة القريبة (عشان التفاعل البشري الذكي والتريّقة الحية)
     else if (userInput.length >= game.answer.length - 2 && userInput.length <= game.answer.length + 2 && !userInput.startsWith('.')) {
         scores[player].wrong += 1;
-        await conn.sendMessage(chatId, { react: { text: "⁉️", key: m.key } });
+        await conn.sendMessage(chatId, { react: { text: "🤦🏻", key: m.key } });
+        
+        const breakRoasts = [
+            "❌ *التفكيك غلط خالص!* ركز في الحروف يسطا ايدك سابقت عقلك في الكتابة! 😂🔥",
+            "❌ *مش قايلك صحصح؟* الحروف متبهدلة منك حاول تاني بسرعة الجولة هتطير!",
+            "❌ *قريب بس غلط!* ركزوا يا شباب وفككوا الكلمة صح!"
+        ];
+        const randomRoast = breakRoasts[Math.floor(Math.random() * breakRoasts.length)];
+        await m.reply(randomRoast);
+        return true;
     }
 
     return false;
@@ -157,5 +190,5 @@ breakHandler.before = async (m, { conn }) => {
 
 breakHandler.usage = ["تفكيك"];
 breakHandler.category = "games";
-breakHandler.command = ['تفكيك'];
+breakHandler.command = ['تفكيك', 'فكك'];
 export default breakHandler;

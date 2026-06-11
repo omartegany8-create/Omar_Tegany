@@ -9,8 +9,7 @@ const client = new Client({
   prefix: [".", "/", "!"],
   fromMe: false, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [
-    // المطور (عمر)
-    { name: "Omar", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
+  
     { name: "Mero", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
     
   ],

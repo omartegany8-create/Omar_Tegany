@@ -85,7 +85,7 @@ async function askGamadQuestion(m, conn, step) {
             if (global.gamadGameCustom?.[chatId]?.current?.step === step) {
                 g.current = null;
                 g.results.push({ type: currentType, status: "❌ انتهى الوقت", winner: null });
-                await conn.sendMessage(chatId, { text: `⏰ *انتهى وقت جولة (${currentType}) يا كساير!* محدش لحق يجاوب الفئة دي.. 🦦` });
+                await conn.sendMessage(chatId, { text: `⏰ *انتهى وقت جولة (${currentType}) يا كسله!* محدش لحق يجاوب الفئة دي.. 🦦` });
                 
                 if (step < CATEGORY_TYPES.length - 1) {
                     setTimeout(() => askGamadQuestion(m, conn, step + 1), 2000);

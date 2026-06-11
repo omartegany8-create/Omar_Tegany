@@ -1,4 +1,9 @@
+/*
+code: premium flags guessing game (بدون زخارف - نظام تفاعل بشري ذكي)
+by: 𝐓𝐨جي & Gemini
+*/
 
+const MAX_ROUNDS = 10;
 
 const flagsData = [
     { name: "مصر", img: "https://flagcdn.com/w640/eg.png" },
@@ -48,107 +53,162 @@ const flagsData = [
     { name: "جنوب افريقيا", img: "https://flagcdn.com/w640/za.png" }
 ];
 
-async function handler(m, { conn, text, command }) {
-    if (!global.gameActive) global.gameActive = {};
-    
-    const args = (text || '').trim().toLowerCase().split(' ');
-    const cmd = args[0];
+const getFlagPrize = (rank) => {
+    if (rank === 0) return { xp: 400, cookies: 8, emoji: "🏆" };
+    if (rank === 1) return { xp: 250, cookies: 5, emoji: "🥈" };
+    return { xp: 90, cookies: 2, emoji: "⭐" };
+};
 
-    // ميزة الحذف لمنع التكرار والبدء من جديد
-    if (cmd === 'حذف' || cmd === 'delete') {
-        if (!global.gameActive[m.chat]) return m.reply("❌ لا توجد لعبة علم نشطة لإلغائها حالياً!");
-        if (global.gameActive[m.chat].timeout) clearTimeout(global.gameActive[m.chat].timeout);
-        delete global.gameActive[m.chat];
-        return m.reply("🗑️ تم إلغاء وحذف لعبة العلم بنجاح! يمكنك البدء من جديد الآن.");
-    }
+// تجميع كل الأسماء المتاحة للأعلام لفحص الإجابات الخاطئة
+const allFlagNames = flagsData.map(f => f.name.trim().toLowerCase());
 
-    if (global.gameActive[m.chat]) return m.reply(`❌ هناك جولة قائمة بالفعل في هذا الجروب!\nاكتب *.${command} حذف* لإلغائها وبدء جولة جديدة.`);
-    
-    // ريأكت علم مصر عند طلب اللعبة 🇪🇬
-    await conn.sendMessage(m.chat, { react: { text: "🇪🇬", key: m.key } });
-    
-    startGame(m, conn, 1);
-}
+async function runFlagGame(m, conn, round) {
+    const chatId = m.chat;
+    const g = global.gameFlagCustom[chatId];
+    if (!g) return;
 
-async function startGame(m, conn, round) {
     const country = flagsData[Math.floor(Math.random() * flagsData.length)];
-    
-    const msg = await conn.sendMessage(m.chat, {
-        image: { url: country.img },
-        caption: `🌍 *اسم الدولة اي [ الجولة: ${round} / 10 ]* \n${LINE_SEPARATOR}\n\n *معك 30 ثانية للإجابة!* \n *رد على الرسالة دي بإسم العلم الصحيح*`
-    });
-    
-    global.gameActive[m.chat] = {
+
+    g.current = {
         answer: country.name.trim().toLowerCase(),
-        image: country.img,
-        msgId: msg.key.id,
         round: round,
-        timeout: setTimeout(async () => {
-            if (global.gameActive[m.chat]) {
-                const answer = global.gameActive[m.chat].answer;
-                const currentRound = global.gameActive[m.chat].round;
-                delete global.gameActive[m.chat];
+        image: country.img,
+        timer: setTimeout(async () => {
+            if (global.gameFlagCustom?.[chatId]?.current?.round === round) {
+                const correctAns = global.gameFlagCustom[chatId].current.answer;
+                global.gameFlagCustom[chatId].current = null;
                 
-                await conn.sendMessage(m.chat, { text: `⏰ *انتهى الوقت!* الإجابة الصحيحة هي: *${answer}*` });
+                await conn.sendMessage(chatId, { 
+                    text: `⏰ *انتهى الوقت ومحدش جابها!* \n\nالعلم ده كان بتاع دولة: *${correctAns}* 🌍\n\nنجهز الجولة اللي بعدها حالا صحصحوا..` 
+                });
                 
-                if (currentRound < 10) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    startGame(m, conn, currentRound + 1);
+                if (round < MAX_ROUNDS) {
+                    setTimeout(() => runFlagGame(m, conn, round + 1), 2500);
                 } else {
-                    conn.sendMessage(m.chat, { text: `🏁 *انتهت الـ 10 جولات كاملة!*\n${LINE_SEPARATOR}\nشكراً للجميع على اللعب.` });
+                    endFlagGame(m, conn);
                 }
             }
         }, 30000)
     };
+
+    const caption = `📌 *تحدي العواصم وأعلام الدول الثقافي* 🌍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n👀 *رد على الصورة دي فوراً بإسم الدولة الصحيحة صاحب العلم ده!*`;
+    
+    const msg = await conn.sendMessage(chatId, { image: { url: country.img }, caption: caption });
+    g.current.id = msg.key.id;
+}
+
+async function endFlagGame(m, conn) {
+    const chatId = m.chat;
+    const g = global.gameFlagCustom[chatId];
+    if (!g) return;
+    
+    const entries = Object.entries(g.scores).sort((a, b) => b[1] - a[1]);
+    if (entries.length === 0) {
+        await conn.sendMessage(chatId, { text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات كاملة!*\n\nبس للأسف مفيش ولا رحالة أو عبقري جغرافيا جمع نقطة.. الجروب كله أبيض في الخرايط! 🦦😂` });
+        delete global.gameFlagCustom[chatId];
+        return;
+    }
+
+    const prizesList = [];
+    const mentions = [];
+    for (let i = 0; i < entries.length; i++) {
+        const [id, score] = entries[i];
+        const prize = getFlagPrize(i);
+        mentions.push(id);
+
+        if (global.db?.users[id]) {
+            global.db.users[id].xp = (global.db.users[id].xp || 0) + prize.xp;
+            global.db.users[id].cookies = (global.db.users[id].cookies || 0) + prize.cookies;
+        }
+        prizesList.push(`${prize.emoji} *المركز ${i + 1}:* @${id.split('@')[0]}\n• الأعلام الصحيحة: [ *${score} دول* ]\n• المكافأة المضافة: [ *+${prize.xp} XP* | *🍪 +${prize.cookies} كوكيز* ]`);
+    }
+
+    const winner = entries[0][0];
+
+    await conn.sendMessage(chatId, {
+        text: `🏁 *لوحة النتائج - نهاية تحدي الأعلام* 🏆\n\n${prizesList.join('\n\n')}\n\n🏅 *عاش يا رحالة! مبروك الصدارة يا @${winner.split('@')[0]} لفيت العالم في ثواني!* 😉🔥`,
+        mentions
+    });
+    
+    delete global.gameFlagCustom[chatId];
+}
+
+async function handler(m, { conn, text, command }) {
+    if (!global.gameFlagCustom) global.gameFlagCustom = {};
+    const chatId = m.chat;
+    
+    const args = (text || '').trim().toLowerCase().split(' ');
+    const cmd = args[0];
+
+    // ميزة الحذف الفوري
+    if (cmd === 'حذف' || cmd === 'انهاء' || cmd === 'delete') {
+        if (!global.gameFlagCustom[chatId]) return m.reply("❌ مفيش جولة أعلام شغالة حالياً عشان أحذفها!");
+        if (global.gameFlagCustom[chatId].current?.timer) clearTimeout(global.gameFlagCustom[chatId].current.timer);
+        delete global.gameFlagCustom[chatId];
+        return m.reply("🗑️ *تم إنهاء وإغلاق تحدي الأعلام.*");
+    }
+
+    if (global.gameFlagCustom[chatId]) return m.reply(`⚠️ في تحدي أعلام شغال حالياً في الجروب!\n\nاكتب *.${command} حذف* لو حابب تقفله وتبدأ جولة مروقة.`);
+
+    await conn.sendMessage(chatId, { react: { text: "🗺️", key: m.key } });
+
+    global.gameFlagCustom[chatId] = { round: 0, scores: {}, current: null };
+    
+    await m.reply(`🌍 *تحدي الاعلام بدأ 🚩🎌!*\n\nالتحدي مكون من *10 جولات* سريعة.. ركزوا في العلم واكتبوا اسم الدولة طياري عشان تقفشوا الصدارة والجوائز..\n\nالجولة الأولى 👇🏻  ... 🚀🔥`);
+    
+    setTimeout(() => runFlagGame(m, conn, 1), 2000);
 }
 
 handler.before = async (m, { conn }) => {
-    if (!m.quoted || !m.text) return;
-    if (!global.gameActive?.[m.chat]) return;
-    
-    const game = global.gameActive[m.chat];
-    if (m.quoted.id !== game.msgId) return;
-    
-    if (m.text.toLowerCase().trim() === game.answer) {
-        clearTimeout(game.timeout);
-        const currentRound = game.round;
-        delete global.gameActive[m.chat];
-        
-        if (global.db?.users[m.sender]) {
-            global.db.users[m.sender].xp = (global.db.users[m.sender].xp || 0) + 100;
-            global.db.users[m.sender].cookies = (global.db.users[m.sender].cookies || 0) + 2;
-        }
-        
-        // ريأكت الفوز 💯 على رسالة العضو
-        await conn.sendMessage(m.chat, { react: { text: "💯", key: m.key } });
-        
-        let captionText = `🎉 *إجابة صحيحة ! ✔✨* \n${LINE_SEPARATOR}\n\n عاااش يا @${m.sender.split('@')[0]} جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n${LINE_SEPARATOR}\n`;
-        
-        if (currentRound < 10) {
-            captionText += `⏳ *استعدوا.. الجولة القادمة (${currentRound + 1} / 10) ستبدأ الآن!*`;
-        } else {
-            captionText += `🏁 *انتهت الجولات ! شكراً للجميع على اللعب 🤍.*`;
-        }
+    const chatId = m.chat;
+    const g = global.gameFlagCustom?.[chatId];
+    if (!g?.current || !m.text) return false;
 
-        await conn.sendMessage(m.chat, {
-            image: { url: game.image },
-            caption: captionText,
-            mentions: [m.sender]
-        }, { quoted: m });
-        
-        if (currentRound < 10) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            startGame(m, conn, currentRound + 1);
+    const cur = g.current;
+    const answer = m.text.trim().toLowerCase();
+
+    // فحص لو العضو جاوب صح على الرسالة الحالية
+    if (answer === cur.answer) {
+        clearTimeout(cur.timer);
+        g.current = null;
+
+        g.scores[m.sender] = (g.scores[m.sender] || 0) + 1;
+
+        await conn.sendMessage(m.chat, { react: { text: "⚡", key: m.key } });
+
+        let captionText = `🎉 *ماشاءالله سريع وجبتها في ثانية!* \n\nعاش يا @${m.sender.split('@')[0]} العلم فعلاً لـ (*${answer}*) 🏆\n🎯 مجموع نقاطك حالياً: [ *${g.scores[m.sender]} نقطة* ]\n\n`;
+
+        const nextRound = cur.round + 1;
+        if (nextRound <= MAX_ROUNDS) {
+            captionText += `⏳ *استعدوا.. الجولة رقم (${nextRound} / 10) نازلة حالا في الشات...*`;
+            await conn.sendMessage(chatId, { text: captionText, mentions: [m.sender] }, { quoted: m });
+            setTimeout(() => runFlagGame(m, conn, nextRound), 3000);
+        } else {
+            captionText += `🏁 *دي كانت الجولة الأخيرة في التحدي العالمي! ثواني والترتيب النهائي نازل...*`;
+            await conn.sendMessage(chatId, { text: captionText, mentions: [m.sender] }, { quoted: m });
+            setTimeout(() => endFlagGame(m, conn), 2000);
         }
         return true;
-    }
+    } 
     
-    await m.reply("❌ *إجابة خاطئة!* رد على رسالة العلم وحاول مرة تانية.");
-    return true;
+    // فحص لو كتب اسم دولة تانية غلط (عشان الهزار والتريّقة الحية)
+    else if (allFlagNames.includes(answer) && !answer.startsWith('.')) {
+        await conn.sendMessage(m.chat, { react: { text: "🤧", key: m.key } });
+        
+        const flagRoasts = [
+            "❌ *لأ غلط !* أنت ساط جغرافيا باين؟ العلم ده في قارة تانية خالص يسطا! 😂🗺️",
+            "❌ *مش هو خالص!* روح ذاكر خرايط وتعال بسرعة عشان الجولة هتطير! 🧐",
+            "❌ *إجابة بريئة من الأطلس!* ركز في الألوان والرموز يا فنان وحاول تاني 
+            !"
+        ];
+        const randomRoast = flagRoasts[Math.floor(Math.random() * flagRoasts.length)];
+        await m.reply(randomRoast);
+        return true;
+    }
+    return false;
 };
 
 handler.usage = ["علم"];
 handler.category = "games";
-handler.command = ['علم', 'country'];
-
+handler.command = ['علم', 'اعلام', 'العلم', 'country'];
 export default handler;

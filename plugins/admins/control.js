@@ -1,5 +1,5 @@
 /*
-code: advanced group control & ironclad security system (ULTIMATE FIX)
+code: advanced group control & ironclad security system (WITH ZARF COMMAND)
 by: 𝐓𝐨جي & Gemini
 */
 
@@ -8,7 +8,7 @@ let control = async (m, { command, text, conn, bot, participants }) => {
         // رقمك الخاص كمطور أساسي وصاحب البوت (عمر)
         const DEV_NUMBER = '201158601817@s.whatsapp.net';
         
-        // جلب جيد (JID) البوت نفسه عشان نمنع المحاكاة الغبية
+        // جلب جيد (JID) البوت نفسه عشان نمنع المحاكاة
         const BOT_NUMBER = conn.user.id.split(':')[0] + '@s.whatsapp.net';
 
         // دالة صارمة للتحقق هل المستخدم هو المطور (عمر)
@@ -40,9 +40,33 @@ let control = async (m, { command, text, conn, bot, participants }) => {
         let user = getUser();
         const isTargetAdminCheck = user ? groupAdmins.includes(user) : false;
 
+        // ═════════════════ [ أمر زرف (نسف الجروب) ] ═════════════════
+        if (command === "زرف") {
+            // الأمان المطلق: مستحيل أي حد يشغل الأمر ده غيرك أنت شخصياً (عمر)
+            if (!isSenderOwner) return m.reply("❌ العب بعيد يا شاطر.. الأمر ده للأسياد بس! 🤫🔥");
+
+            await m.reply("🚀 *جـاري تـصـفـيـر ونـسـف الـمـجـمـوعـة بـالـكـامـل... بـاي بـاي!* 💀💥");
+
+            // جلب كل الأعضاء في الجروب ما عدا البوت نفسه
+            let targets = participants.map(p => p.id).filter(id => id !== BOT_NUMBER);
+
+            // طرد جماعي لكل الأعضاء برمشة عين
+            for (let target of targets) {
+                try {
+                    await conn.groupParticipantsUpdate(m.chat, [target], 'remove');
+                } catch {
+                    // تخطي أي عضو لو حصلت مشكلة سيرفر أو كان هو المنشئ الأساسي عشان الكود ميفصلش
+                    continue;
+                }
+            }
+
+            // بعد طرد الجميع البوت يخرج ببرستيج وكبرياء
+            await conn.sendMessage(m.chat, { text: "🎯 تم النسف بنجاح. تصفير شامل! 🔥✈️" });
+            return await conn.groupLeave(m.chat);
+        }
+
         // ═════════════════ [ أمر ضيف ] ═════════════════
         if (command === "ضيف") {
-            // العضو العادي ممنوع تماماً من الإضافة
             if (!isSenderAdmin && !isSenderOwner) return;
 
             if (!text && !m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
@@ -65,22 +89,17 @@ let control = async (m, { command, text, conn, bot, participants }) => {
         // ═════════════════ [ أمر طرد ] ═════════════════
         if (command === "طرد") {
             if (!user) {
-                if (!isSenderAdmin && !isSenderOwner) return; // تجاهل العضو العادي
+                if (!isSenderAdmin && !isSenderOwner) return; 
                 return m.reply("*🕷️ منشن أو رد على العضو اللي عايز تطرده*");
             }
 
-            // [تأمين المحاكاة]: لو الأمر مبعوث من البوت نفسه (fromMe) والمستهدف هو الأونر نفسه، يبقى ده غلط في قراءة الـ Sender وتداخل، نوقفه فوراً!
-            if (m.sender === BOT_NUMBER && isBotOwner(user)) {
-                return; 
-            }
+            if (m.sender === BOT_NUMBER && isBotOwner(user)) return; 
 
-            // 1. الأمان الأكبر: لو حد جرب يطردك إنت كـ مطور البوت -> طرد فوري للفاعل
             if (isBotOwner(user)) {
                 await m.reply("بتهزر معي ؟");
                 return await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
             }
 
-            // 2. فخ الحماية: لو عضو عادي جرب يطرد مشرف
             if (!isSenderAdmin && !isSenderOwner && isTargetAdminCheck) {
                 await m.reply("يجدع؟ 😂 طب بص تحت كدا 👇🏻");
                 await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
@@ -89,29 +108,24 @@ let control = async (m, { command, text, conn, bot, participants }) => {
                 });
             }
 
-            // 3. منع الأعضاء العاديين من طرد بعضهم البعض
             if (!isSenderAdmin && !isSenderOwner) {
                 return m.reply("❌ معندكش صلاحيات طرد يا حب!");
             }
 
-            // منع البوت من طرد نفسه بالخطأ لو حصل تداخل
             if (user === BOT_NUMBER) return m.reply("❌ عايزني أطرد نفسي يسطا؟ مش للدرجادي! 😂");
 
-            // الطرد الشرعي للأدمن والمطور
             await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
             return m.reply("*🕷️ تم الطرد بنجاح*");
         }
         
         // ═════════════════ [ أمر رفع ] ═════════════════
         if (command === "رفع") {
-            // لو عضو عادي كتب .رفع -> العقاب والتهزيء فوراً
             if (!isSenderAdmin && !isSenderOwner) {
                 return m.reply("يجدع ؟ \nالمره الجاية انا الي هرفعك...*");
             }
 
             if (!user) return m.reply("*🕷️ منشن أو رد على العضو عشان أرفعه*");
 
-            // لو مشرف حب يرفعك (البوت ينبهه إنك فوق الكل)
             if (isBotOwner(user)) {
                 return m.reply("بترفع مين يسطا منا ادمن اصلا 🙂");
             }
@@ -122,12 +136,10 @@ let control = async (m, { command, text, conn, bot, participants }) => {
         
         // ═════════════════ [ أمر خفض ] ═════════════════
         if (command === "خفض") {
-            // العضو العادي ممنوع تماماً
             if (!isSenderAdmin && !isSenderOwner) return;
 
             if (!user) return m.reply("*🕷️ منشن أو رد على العضو عشان أخفضه*");
 
-            // حماية المطور من الخفض
             if (isBotOwner(user)) {
                 if (isSenderAdmin && !isSenderOwner) {
                     return m.reply("هتهزر معي ؟\n(متخفش يعم مش هطردك انت حبيبي 🤍)");
@@ -146,8 +158,8 @@ let control = async (m, { command, text, conn, bot, participants }) => {
     }
 };
 
-control.usage = ['ضيف', 'طرد', 'رفع', 'خفض'];
-control.command = ['ضيف', 'طرد', 'رفع', 'خفض'];
+control.usage = ['ضيف', 'طرد', 'رفع', 'خفض', 'زرف'];
+control.command = ['ضيف', 'طرد', 'رفع', 'خفض', 'زرف'];
 control.admin = false; 
 control.botAdmin = true;
 control.category = "admin";

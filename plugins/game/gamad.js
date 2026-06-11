@@ -1,9 +1,8 @@
 /*
-code: game gamad complete custom (Multi-Letter Edition)
-by: 𝐓𝐨𝐣𝐢 & Gemini
+code: game gamad complete custom (Multi-Player & Reply-Only Edition)
+by: 𝐓𝐨جي & Gemini
 */
 
-// مصفوفة الحروف المتاحة للعبة مع قاعدة بيانات ضخمة وموسعة لكل حرف
 const GAMAD_DATABASE = {
     "أ": {
         "ولد": ["أحمد", "أمجد", "أكرم", "أنور", "أسامة", "أشرف", "أنس", "أدهم", "أمين", "أمير", "إياد", "إسلام", "إبراهيم", "أسر"],
@@ -69,6 +68,8 @@ const CATEGORY_EMOJIS = { "ولد": "🙋🏻", "بنت": "🙋🏻‍♀️", "
 async function askGamadQuestion(m, conn, step) {
     const chatId = m.chat;
     const g = global.gamadGameCustom[chatId];
+    if (!g) return;
+    
     const letter = g.letter;
     const currentType = CATEGORY_TYPES[step];
     const currentEmoji = CATEGORY_EMOJIS[currentType];
@@ -79,11 +80,12 @@ async function askGamadQuestion(m, conn, step) {
         type: currentType,
         emoji: currentEmoji,
         validAnswers: validAnswers,
+        questionId: null,
         timer: setTimeout(async () => {
             if (global.gamadGameCustom?.[chatId]?.current?.step === step) {
                 g.current = null;
-                g.results.push({ type: currentType, status: "❌ انتهى الوقت" });
-                await m.reply(`⏰ *انتهى وقت جولة (${currentType})!* لم يتم الإجابة عليها.`);
+                g.results.push({ type: currentType, status: "❌ انتهى الوقت", winner: null });
+                await conn.sendMessage(chatId, { text: `⏰ *انتهى وقت جولة (${currentType}) يا كساير!* محدش لحق يجاوب الفئة دي.. 🦦` });
                 
                 if (step < CATEGORY_TYPES.length - 1) {
                     setTimeout(() => askGamadQuestion(m, conn, step + 1), 2000);
@@ -94,37 +96,58 @@ async function askGamadQuestion(m, conn, step) {
         }, 30000)
     };
 
-    await conn.sendMessage(chatId, {
-        text: ` *لعبة ولد ، بنت ، جماد ، نبات ، حيوان ، بلاد 👻💫  * ✨\n\n👈 المطلوب الآن: اكتب اسم (*${currentType}*) يبدأ بحرف [ *${letter}* ]\n\n⏱️ _معاك 30 ثانية للتفكير !_`
+    const sent = await conn.sendMessage(chatId, {
+        text: `🚌 *لعبة ولد ، بنت ، جماد ، نبات ، حيوان ، بلاد 👻💫*\n\n👈 المطلوب الآن: اكتب اسم (*${currentType}*) يبدأ بحرف [ *${letter}* ]\n\n⚠️ *ملاحظة مهمة:* لازم تعمل (رد / Reply) على الرسالة دي بالإجابة وإلا مش هتتحسب! 😎🔥\n⏱️ _معاكم 30 ثانية للتفكير السريع!_`
     });
+    g.current.questionId = sent.key.id;
 }
 
 async function finishGamadGame(m, conn) {
     const chatId = m.chat;
     const g = global.gamadGameCustom[chatId];
+    if (!g) return;
 
-    let summary = g.results.map(r => `${r.status === '✅' ? '✅' : '❌'} *${r.type}* ⌯︙ ${r.status}`).join('\n');
-    let correctCount = g.results.filter(r => r.status === '✅').length;
+    let summary = g.results.map(r => {
+        let winText = r.winner ? `@${r.winner.split('@')[0]}` : "لا أحد";
+        return `${r.status === '✅' ? '✅' : '❌'} *${r.type}* ⌯︙ ${r.status} (${winText})`;
+    }).join('\n');
 
-    if (global.db?.users[g.player]) {
-        global.db.users[g.player].xp = (global.db.users[g.player].xp || 0) + (correctCount * 50);
-    }
+    // فرز الفائزين بالترتيب حسب تكرار الفوز لحسبة نهائية فخمة
+    let scoreBoard = {};
+    g.results.forEach(r => {
+        if (r.winner) scoreBoard[r.winner] = (scoreBoard[r.winner] || 0) + 1;
+    });
+
+    let sortedEntries = Object.entries(scoreBoard).sort((a, b) => b[1] - a[1]);
+    let leaderboard = sortedEntries.map(([user, score], idx) => {
+        if (global.db?.users[user]) {
+            global.db.users[user].xp = (global.db.users[user].xp || 0) + (score * 70);
+        }
+        return `${idx + 1}. @${user.split('@')[0]} ⌯︙ *${score} نقاط* (+${score * 70} XP)`;
+    }).join('\n') || "😔 لا يوجد رابحون في هذه الجولة الكسولة!";
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *انتهت لعبة جماد بالكامل لحرف [ ${g.letter} ]!*👻\n\nإليك كشف الاداء الخاص بك:\n\n${summary}\n\n🏆 المجموع النهائي للإجابات الصحيحة: *${correctCount} من 6*\n🏅 الجوائز المكتسبة: *+${correctCount * 50} XP*\n\n> 💡 *اذا تريد اللعب اكتب .جماد 🤍*`,
-        mentions: [g.player]
+        text: `🏁 *انتهت لعبة جماد الأسطورية بالكامل لحرف [ ${g.letter} ]!* 👻\n\n📊 *كشف الأداء العام للجولات:*\n${summary}\n\n🏆 *لوحة شرف الأبطال الأسرع:*\n${leaderboard}\n\n> 💡 *إذا تريد اللعب اكتب .جماد 🤍*`,
+        mentions: [...new Set(g.results.map(r => r.winner).filter(Boolean)), ...sortedEntries.map(e => e[0])]
     });
 
     delete global.gamadGameCustom[chatId];
 }
 
-async function handler(m, { conn }) {
+async function handler(m, { conn, text }) {
     if (!global.gamadGameCustom) global.gamadGameCustom = {};
     const chatId = m.chat;
 
+    // ميزة الحذف
+    if (text === 'حذف' || text === 'انهاء') {
+        if (!global.gamadGameCustom[chatId]) return m.reply("❌ مفيش لعبة جماد شغالة حالياً عشان أحذفها!");
+        if (global.gamadGameCustom[chatId].current?.timer) clearTimeout(global.gamadGameCustom[chatId].current.timer);
+        delete global.gamadGameCustom[chatId];
+        return m.reply("🗑️ *تم إنهاء وإغلاق لعبة جماد بنجاح بواسطة الكينج!*");
+    }
+
     if (global.gamadGameCustom[chatId]) return m.reply("❌ هناك لعبة جماد قائمة بالفعل في هذا الشات!");
 
-    // اختيار حرف عشوائي تماماً من قاعدة البيانات عند بداية اللعبة
     const availableLetters = Object.keys(GAMAD_DATABASE);
     const chosenLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
 
@@ -135,10 +158,8 @@ async function handler(m, { conn }) {
         current: null
     };
 
-    // ريأكت التفعيل بالخشب 🪵
     await conn.sendMessage(m.chat, { react: { text: "🪵", key: m.key } });
-    
-    await m.reply(`🎮 *تم بدء لعبة جماد...!*\nالحرف هو: [ *${chosenLetter}* ] 🎲\n\nاستعدوا، اللعبة محجوزة ومخصصة للأعضاء المسرعين!`);
+    await m.reply(`🎮 *تم بدء لعبة جماد الجماعية...!*\nالحرف المختار عشوائياً هو: [ *${chosenLetter}* ] 🎲\n\nاستعدوا الشات مفتوح للجميع والسرعة هي الحكم! 🔥🚀`);
     
     setTimeout(() => askGamadQuestion(m, conn, 0), 2000);
 }
@@ -148,33 +169,34 @@ handler.before = async (m, { conn }) => {
     const g = global.gamadGameCustom?.[chatId];
     if (!g?.current || !m.text) return false;
 
-    // اللعبة محجوزة للعضو المبادر
-    if (m.sender !== g.player) return false;
-
     const cur = g.current;
+    
+    // الشرط الجوهري: لازم العضو يعمل رد (Reply) على رسالة سؤال البوت بالملي
+    if (!m.quoted || m.quoted.id !== cur.questionId) return false;
+
     const userAnswer = m.text.trim().toLowerCase();
 
-    clearTimeout(cur.timer);
-    g.current = null;
+    // التحقق من صحة الإجابة
+    const isCorrect = cur.validAnswers.some(ans => ans.toLowerCase() === userAnswer);
 
-    // التحقق من صحة الإجابة بالحرف العشوائي النشط حالياً
-    if (cur.validAnswers.includes(userAnswer) || cur.validAnswers.map(v => v.toLowerCase()).includes(userAnswer)) {
-        // إجابة صحيحة
+    if (isCorrect) {
+        clearTimeout(cur.timer);
+        g.current = null;
+        
         await conn.sendMessage(m.chat, { react: { text: cur.emoji, key: m.key } });
-        g.results.push({ type: cur.type, status: "✅" });
-        await m.reply(`🎉 *إجابة صحيحة وممتازة!* تم تسجيل نقطة لفئة الـ ${cur.type}.`);
-    } else {
-        // إجابة خاطئة
-        await conn.sendMessage(m.chat, { react: { text: "🙄", key: m.key } });
-        g.results.push({ type: cur.type, status: "❌ خاطئة" });
-        await m.reply(`ده ${cur.type} اوله حرف ال ${g.letter} بالله عليك ؟ 🙂`);
-    }
+        g.results.push({ type: cur.type, status: "✅", winner: m.sender });
+        
+        await m.reply(`🎉 *إجابة صحيحة خارقة طلقة!* أحسنت يا @${m.sender.split('@')[0]} جبت اسم الـ ${cur.type} صح بالملّي! 🏆`, null, { mentions: [m.sender] });
 
-    // الانتقال للجولة التالية
-    if (cur.step < CATEGORY_TYPES.length - 1) {
-        setTimeout(() => askGamadQuestion(m, conn, cur.step + 1), 2500);
+        if (cur.step < CATEGORY_TYPES.length - 1) {
+            setTimeout(() => askGamadQuestion(m, conn, cur.step + 1), 2500);
+        } else {
+            setTimeout(() => finishGamadGame(m, conn), 1500);
+        }
     } else {
-        setTimeout(() => finishGamadGame(m, conn), 1500);
+        // إجابة خاطئة بالرد
+        await conn.sendMessage(m.chat, { react: { text: "🙄", key: m.key } });
+        await m.reply(`ده ${cur.type} أوله حرف الـ [ ${g.letter} ] بالله عليك ؟ 🙂 ركز شوية يا @${m.sender.split('@')[0]}!!`, null, { mentions: [m.sender] });
     }
 
     return true;
@@ -184,4 +206,3 @@ handler.usage = ["جماد"];
 handler.category = "games";
 handler.command = ['جماد'];
 export default handler;
-        

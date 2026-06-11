@@ -1,9 +1,4 @@
-/*
-code: game country
-by: 𝐓𝐨𝐣𝐢 & Gemini
-*/
 
-const LINE_SEPARATOR = "❉═━═━═━ ◦ • ⊰🍂⊱ • ◦ ━═━═━═❉";
 
 const flagsData = [
     { name: "مصر", img: "https://flagcdn.com/w640/eg.png" },
@@ -19,11 +14,11 @@ const flagsData = [
     { name: "المانيا", img: "https://flagcdn.com/w640/de.png" },
     { name: "اسبانيا", img: "https://flagcdn.com/w640/es.png" },
     { name: "ايطاليا", img: "https://flagcdn.com/w640/it.png" },
-    { name: "إنجلترا", img: "https://flagcdn.com/w640/gb.png" },
-    { name: "أمريكا", img: "https://flagcdn.com/w640/us.png" },
+    { name: "انجلترا", img: "https://flagcdn.com/w640/gb.png" },
+    { name: "امريكا", img: "https://flagcdn.com/w640/us.png" },
     { name: "كوريا الجنوبية", img: "https://flagcdn.com/w640/kr.png" },
     { name: "العراق", img: "https://flagcdn.com/w640/iq.png" },
-    { name: "الإمارات", img: "https://flagcdn.com/w640/ae.png" },
+    { name: "الامارات", img: "https://flagcdn.com/w640/ae.png" },
     { name: "قطر", img: "https://flagcdn.com/w640/qa.png" },
     { name: "البرتغال", img: "https://flagcdn.com/w640/pt.png" },
     { name: "الكويت", img: "https://flagcdn.com/w640/kw.png" },
@@ -50,7 +45,7 @@ const flagsData = [
     { name: "السنغال", img: "https://flagcdn.com/w640/sn.png" },
     { name: "غانا", img: "https://flagcdn.com/w640/gh.png" },
     { name: "الكاميرون", img: "https://flagcdn.com/w640/cm.png" },
-    { name: "جنوب أفريقيا", img: "https://flagcdn.com/w640/za.png" }
+    { name: "جنوب افريقيا", img: "https://flagcdn.com/w640/za.png" }
 ];
 
 async function handler(m, { conn, text, command }) {
@@ -80,7 +75,7 @@ async function startGame(m, conn, round) {
     
     const msg = await conn.sendMessage(m.chat, {
         image: { url: country.img },
-        caption: `🌍 *خـمـن الـعـلـم [ الجولة: ${round} / 10 ]* 🌍\n${LINE_SEPARATOR}\n\nلديك 30 ثانية للإجابة!\n*رد على هذه الرسالة باسم العلم الصحيح*`
+        caption: `🌍 *اسم الدولة اي [ الجولة: ${round} / 10 ]* \n${LINE_SEPARATOR}\n\n *معك 30 ثانية للإجابة!* \n *رد على الرسالة دي بإسم العلم الصحيح*`
     });
     
     global.gameActive[m.chat] = {
@@ -127,12 +122,12 @@ handler.before = async (m, { conn }) => {
         // ريأكت الفوز 💯 على رسالة العضو
         await conn.sendMessage(m.chat, { react: { text: "💯", key: m.key } });
         
-        let captionText = `🎉 *إجابة صحيحة !* \n${LINE_SEPARATOR}\n\nعاش يا @${m.sender.split('@')[0]} جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n${LINE_SEPARATOR}\n`;
+        let captionText = `🎉 *إجابة صحيحة ! ✔✨* \n${LINE_SEPARATOR}\n\n عاااش يا @${m.sender.split('@')[0]} جبت اسم العلم صح 🏆\n🏅 الجوائز: *+100 XP* & *🍪 +2 كوكيز*\n\n${LINE_SEPARATOR}\n`;
         
         if (currentRound < 10) {
             captionText += `⏳ *استعدوا.. الجولة القادمة (${currentRound + 1} / 10) ستبدأ الآن!*`;
         } else {
-            captionText += `🏁 *انتهت الـ 10 جولات كاملة! شكراً للجميع على اللعب.*`;
+            captionText += `🏁 *انتهت الجولات ! شكراً للجميع على اللعب 🤍.*`;
         }
 
         await conn.sendMessage(m.chat, {
@@ -142,13 +137,13 @@ handler.before = async (m, { conn }) => {
         }, { quoted: m });
         
         if (currentRound < 10) {
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             startGame(m, conn, currentRound + 1);
         }
         return true;
     }
     
-    await m.reply("❌ *إجابة خاطئة!* رد على رسالة العلم وحاول مرة أخرى.");
+    await m.reply("❌ *إجابة خاطئة!* رد على رسالة العلم وحاول مرة تانية.");
     return true;
 };
 

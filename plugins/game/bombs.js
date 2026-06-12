@@ -68,7 +68,7 @@ async function handler(m, { conn }) {
 
     const currentBoardText = drawLiveBoard(global.bombsGame[chatId].board, global.bombsGame[chatId].revealed);
 
-    const sent = await m.reply(`🎮 *لعبة المتفجرات بدأت 👻💣🔥*\n@${m.sender.split('@')[0]} يلعب الآن \n\n${currentBoardText}\n\n> *عندك 9 مناطق! اعمل (رد / Reply) على الرسالة دي بالرقم من [1 إلى 9]، بس خلي بالك من القنابل 👽💣!*`, null, { mentions: [m.sender] });
+    const sent = await m.reply(`🎮 *لعبة المتفجرات بدأت 👻💣🔥*\n@${m.sender.split('@')[0]} *يلعب الآن* \n\n${currentBoardText}\n\n> *عندك 9 مناطق! اعمل (رد / Reply) على الرسالة دي بالرقم من [1 إلى 9]، بس خلي بالك من القنابل 👽💣!*`, null, { mentions: [m.sender] });
     
     global.bombsGame[chatId].lastMsgId = sent.key.id;
     startBombTimeout(chatId, conn);

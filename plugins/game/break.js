@@ -1,9 +1,57 @@
 /*
-code: premium word breaking game (بدون زخارف - نظام تفاعل بشري ذكي)
+code: premium word breaking game (أنمي إديشن - تفاعل ذكي ونظيف)
 by: 𝐓𝐨جي & Gemini
 */
 
 const MAX_ROUNDS = 10;
+
+// قاعدة بيانات داخلية ضخمة ومضمونة لشخصيات ومصطلحات الأنمي متفككة جاهزة
+const LOCAL_WORDS_DATABASE = [
+    { word: "لوفي", answer: "ل و ف ي" },
+    { word: "زورو", answer: "ز و ر و" },
+    { word: "سانجي", answer: "س ا ن ج ي" },
+    { word: "شانكس", answer: "ش ا ن ك س" },
+    { word: "ايس", answer: "ا ي س" },
+    { word: "ميهوك", answer: "م ي ه و ك" },
+    { word: "كايدو", answer: "ك ا ي د و" },
+    { word: "ناروتو", answer: "ن ا ر و ت و" },
+    { word: "ساسكي", answer: "س ا س ك ي" },
+    { word: "إيتاشي", answer: "إ ي ت ا ش ي" },
+    { word: "كاكاشي", answer: "ك ا ك ا ش ي" },
+    { word: "مادارا", answer: "م ا د ا ر ا" },
+    { word: "جيرايا", answer: "ج ي ر ا ي ا" },
+    { word: "غوجو", answer: "غ و ج و" },
+    { word: "سوكونا", answer: "س و ك و ن ا" },
+    { word: "توجي", answer: "ت و ج ي" },
+    { word: "يوجي", answer: "ي و ج ي" },
+    { word: "ميجومي", answer: "م ي ج و م ي" },
+    { word: "إيرين", answer: "إ ي ر ي ن" },
+    { word: "ليفاي", answer: "ل ي ف ا ي" },
+    { word: "ميكاسا", answer: "م ي ك ا س ا" },
+    { word: "ارمين", answer: "ا ر م ي ن" },
+    { word: "أروين", answer: "أ ر و ي ن" },
+    { word: "غوكو", answer: "غ و ك و" },
+    { word: "فيجيتا", answer: "ف ي ج ي ت ا" },
+    { word: "فريزا", answer: "ف ر ي ز ا" },
+    { word: "برولي", answer: "ب ر و ل ي" },
+    { word: "تانجيرو", answer: "ت ا ن ج ي ر و" },
+    { word: "نيزوكو", answer: "ن ي ز و ك و" },
+    { word: "زينيتسو", answer: "ز ي ن ي ت س و" },
+    { word: "اينوسكي", answer: "ا ي ن و س ك ي" },
+    { word: "موزان", answer: "م و ز ا ن" },
+    { word: "رينغوكو", answer: "ر ي ن غ و ك و" },
+    { word: "غون", answer: "غ و ن" },
+    { word: "كيلوا", answer: "ك ي ل و ا" },
+    { word: "هيسوكا", answer: "ه ي س و ك ا" },
+    { word: "كورابيكا", answer: "ك و ر ا ب ي ك ا" },
+    { word: "ميرويم", answer: "م ي ر و ي م" },
+    { word: "نيتيرو", answer: "ن ي ت ي ر و" },
+    { word: "أيزن", answer: "أ ي ز ن" },
+    { word: "إيتشيغو", answer: "إ ي ت ش ي غ و" },
+    { word: "بياكويا", answer: "ب ي ا ك و ي ا" },
+    { word: "كينباتشي", answer: "ك ي ن ب ا ت ش ي" },
+    { word: "أولكيورا", answer: "أ و ل ك ي و ر ا" }
+];
 
 // دالة مخصصة لجلب سؤال جديد وعرضه بشكل فخم ومنسق
 async function sendBreakQuestion(m, conn, chatId) {
@@ -15,47 +63,34 @@ async function sendBreakQuestion(m, conn, chatId) {
         return finishBreakGame(m, conn, chatId);
     }
 
-    try {
-        // تحديث الرابط لسيرفر مستقر ومضمون لأسئلة التفكيك والتركيب
-        const response = await fetch("https://raw.githubusercontent.com/Afghany/Premium-Files/main/games/tefkeek.json");
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const data = await response.json();
-        const q = data[Math.floor(Math.random() * data.length)];
+    // اختيار كلمة عشوائية من القاعدة المحلية المضمونة
+    const q = LOCAL_WORDS_DATABASE[Math.floor(Math.random() * LOCAL_WORDS_DATABASE.length)];
+    
+    game.question = q.word; 
+    game.answer = q.answer.trim();
 
-        // ظبط قراءة المفاتيح حسب نظام ملف الـ JSON المستقر (الكلمة وتفكيكها الصحيح)
-        game.question = q.question || q.word; 
-        game.answer = (q.response || q.result || q.answer).trim();
+    const msgText = `📌 *تحدي تفكيك الكلمات السريع* 🔨\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n🧩 *أسرع واحد يفكك الكلمة دي فوراً بالشات:* \n\n👉🏻  *${game.question}* 👈🏻\n\n_اكتب الحروف متباعدة وبدون أي زخرفة عشان النقطة تتحسبلك بسرعة!_`;
+    
+    const msg = await conn.sendMessage(chatId, { text: msgText });
+    game.msgId = msg.key.id;
 
-        const msgText = `📌 *تحدي تفكيك الكلمات السريع* 🔨\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n🧩 *أسرع واحد يفكك الكلمة دي فوراً بالشات:* \n\n👉🏻  *${game.question}* 👈🏻\n\n_اكتب الحروف متباعدة وبدون أي زخرفة عشان النقطة تتحسبلك بسرعة!_`;
-        
-        const msg = await conn.sendMessage(chatId, { text: msgText });
-        game.msgId = msg.key.id;
+    if (game.timeout) clearTimeout(game.timeout);
+    game.timeout = setTimeout(async () => {
+        if (global.breakGame?.games[chatId] && global.breakGame.games[chatId].round === game.round) {
+            const correctAns = global.breakGame.games[chatId].answer;
+            global.breakGame.games[chatId].answer = "";
+            
+            await conn.sendMessage(chatId, {
+                text: `⏰ *انتهى الوقت ومحدش لحق يفككها!*\n\nالتفكيك الصحيح كان: *${correctAns}*\n\nنجهز الجولة اللي بعدها حالا صحصحوا معايا..`
+            });
 
-        if (game.timeout) clearTimeout(game.timeout);
-        game.timeout = setTimeout(async () => {
-            if (global.breakGame?.games[chatId] && global.breakGame.games[chatId].round === game.round) {
-                const correctAns = global.breakGame.games[chatId].answer;
-                global.breakGame.games[chatId].answer = "";
-                
-                await conn.sendMessage(chatId, {
-                    text: `⏰ *انتهى الوقت ومحدش لحق يفككها!*\n\nالتفكيك الصحيح كان: *${correctAns}*\n\nنجهز الجولة اللي بعدها حالا صحصحوا معايا..`
-                });
-
-                if (game.round < MAX_ROUNDS) {
-                    setTimeout(() => sendBreakQuestion(m, conn, chatId), 2500);
-                } else {
-                    finishBreakGame(m, conn, chatId);
-                }
+            if (game.round < MAX_ROUNDS) {
+                setTimeout(() => sendBreakQuestion(m, conn, chatId), 2500);
+            } else {
+                finishBreakGame(m, conn, chatId);
             }
-        }, 30000);
-
-    } catch (error) {
-        console.error(error);
-        await conn.sendMessage(chatId, { text: "❌ حصل خطأ أثناء جلب الكلمات من السيرفر! جرب تشغل اللعبة تاني يسطا." });
-        delete global.breakGame.games[chatId];
-        delete global.breakGame.scores[chatId];
-    }
+        }
+    }, 30000);
 }
 
 // دالة إنهاء اللعبة وعرض كشف الحساب والجوائز بالتفصيل
@@ -91,7 +126,7 @@ async function finishBreakGame(m, conn, chatId) {
     const winner = finalScores[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *لوحة شرف الأبطال - نهاية تحدي التفكيك* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا ابطال السرعة والتركيز! الصدارة انهارده من نصيب @${winner.split('@')[0]} إيدك طلقة متمكن!* 🪄🔥`,
+        text: `🏁 *النتائج 👇🏻  - نهاية تحدي التفكيك* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا ابطال السرعة والتركيز! الصدارة انهارده من نصيب @${winner.split('@')[0]} إيدك طلقة متمكن!* 🪄🔥`,
         mentions: finalScores.map(e => e[0])
     });
 
@@ -123,7 +158,8 @@ async function breakHandler(m, { conn, text, command }) {
     global.breakGame.games[chatId] = {
         round: 0,
         answer: "",
-        timeout: null
+        timeout: null,
+        msgId: null
     };
     global.breakGame.scores[chatId] = {};
 
@@ -142,13 +178,12 @@ breakHandler.before = async (m, { conn }) => {
 
     if (!game.answer) return false;
 
-    if (!scores[player]) {
-        scores[player] = { correct: 0, wrong: 0 };
-    }
-
     const userInput = m.text.trim();
 
+    // 1. التحقق من الإجابة الصحيحة بالملّي
     if (userInput === game.answer) {
+        if (!scores[player]) scores[player] = { correct: 0, wrong: 0 };
+        
         clearTimeout(game.timeout);
         game.answer = ""; 
         scores[player].correct += 1;
@@ -163,25 +198,28 @@ breakHandler.before = async (m, { conn }) => {
             await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => sendBreakQuestion(m, conn, chatId), 3000);
         } else {
-            replyMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي! ثواني وبحسب لكم الترتيب النهائي والجوائز...*`;
+            replyMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي! النتائج 👇🏻...*`;
             await conn.sendMessage(chatId, { text: replyMsg, mentions: [player] }, { quoted: m });
             setTimeout(() => finishBreakGame(m, conn, chatId), 2000);
         }
         return true;
     } 
     
-    // فحص الإجابات الخاطئة القريبة (عشان التفاعل البشري الذكي والتريّقة الحية)
-    else if (userInput.length >= game.answer.length - 2 && userInput.length <= game.answer.length + 2 && !userInput.startsWith('.')) {
+    // 2. فحص ذكي جداً للإجابات القريبة: يشتغل فقط لو الإجابة متفرقة وبنفس الطول التقريبي للإجابة الصح (لمنع التداخل مع السوالف العادية)
+    else if (userInput.includes(' ') && userInput.length >= game.answer.length - 2 && userInput.length <= game.answer.length + 2 && !userInput.startsWith('.')) {
+        if (!scores[player]) scores[player] = { correct: 0, wrong: 0 };
+        
         scores[player].wrong += 1;
         await conn.sendMessage(chatId, { react: { text: "🤦🏻", key: m.key } });
         
         const breakRoasts = [
-            "❌ *التفكيك غلط خالص!* ركز في الحروف يسطا ايدك سابقت عقلك في الكتابة! 😂🔥",
+            "❌ *التفكيك غلط خالص!* ركز في الحروف ايدك سابقاك في الكتابة! 😂🔥",
             "❌ *مش قايلك صحصح؟* الحروف متبهدلة منك حاول تاني بسرعة الجولة هتطير!",
             "❌ *قريب بس غلط!* ركزوا يا شباب وفككوا الكلمة صح!"
         ];
         const randomRoast = breakRoasts[Math.floor(Math.random() * breakRoasts.length)];
         await m.reply(randomRoast);
+
         return true;
     }
 

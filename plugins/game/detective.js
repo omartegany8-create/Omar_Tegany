@@ -117,7 +117,7 @@ async function nextRound(m, conn, chatId) {
     game.currentQuestion = game.questionsPool[game.round - 1];
     const cur = game.currentQuestion;
 
-    const msgText = `📌 *تحدي المحقق الأسطوري والذكاء* 🕵🏻‍♂️🔍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• فئة التخمين: [ *${animeNames[game.category]}* ]\n\n💡 *إليك 3 تلميحات سرية ومنطقية عن الشخصية:*\n\n1️⃣ ⎋ ${cur.hints[0]}\n2️⃣ ⎋ ${cur.hints[1]}\n3️⃣ ⎋ ${cur.hints[2]}\n\n_رد على الرسالة دي باختصار باسم الشخصية صح وبدون زخرفة عشان تحسب نقطتك!_`;
+    const msgText = `📌 *تحدي المحقق الأسطوري* 🕵🏻‍♂️🔍\n\n \n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• فئة التخمين: [ *${animeNames[game.category]}* ]\n\n💡 *إليك 3 تلميحات عن الشخصية:*\n\n1️⃣ ⎋ ${cur.hints[0]}\n2️⃣ ⎋ ${cur.hints[1]}\n3️⃣ ⎋ ${cur.hints[2]}\n\n_رد على الرسالة دي باسم الشخصية صح عشان تحسب نقطتك!_`;
 
     const sent = await conn.sendMessage(chatId, { text: msgText });
     game.lastMsgId = sent.key.id;

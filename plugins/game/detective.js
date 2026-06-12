@@ -117,7 +117,7 @@ async function nextRound(m, conn, chatId) {
     game.currentQuestion = game.questionsPool[game.round - 1];
     const cur = game.currentQuestion;
 
-    const msgText = `📌 *تحدي المحقق الأسطوري والذكاء* 🕵🏻‍♂️🔍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• فئة التخمين: [ *${animeNames[game.category]}* ]\n\n💡 *إليك 3 تلميحات سرية ومنطقية عن الشخصية:*\n\n1️⃣ ⎋ ${cur.hints[0]}\n2️⃣ ⎋ ${cur.hints[1]}\n3️⃣ ⎋ ${cur.hints[2]}\n\n_اكتب اسم الشخصية صح وبدون زخرفة طياري بالشات عشان تقفش النقطة!_`;
+    const msgText = `📌 *تحدي المحقق الأسطوري والذكاء* 🕵🏻‍♂️🔍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• فئة التخمين: [ *${animeNames[game.category]}* ]\n\n💡 *إليك 3 تلميحات سرية ومنطقية عن الشخصية:*\n\n1️⃣ ⎋ ${cur.hints[0]}\n2️⃣ ⎋ ${cur.hints[1]}\n3️⃣ ⎋ ${cur.hints[2]}\n\n_رد على الرسالة دي باختصار باسم الشخصية صح وبدون زخرفة عشان تحسب نقطتك!_`;
 
     const sent = await conn.sendMessage(chatId, { text: msgText });
     game.lastMsgId = sent.key.id;
@@ -155,7 +155,7 @@ async function finishDetectiveGame(m, conn, chatId) {
     const winner = finalScores[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *لوحة النتائج 👇🏻- نهاية تحدي التحقيق* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا وحوش التحليل ! الصدارة   @${winner.split('@')[0]} تفكيرك عبقري وسرعة!* 🕵🏻‍♂️🔥`,
+        text: `🏁 *لوحة النتائج 👇 - نهاية تحدي التحقيق* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا وحوش التحليل! الصدارة @${winner.split('@')[0]} تفكيرك عبقري وسرعة!* 🕵🏻‍♂️🔥`,
         mentions: finalScores.map(e => e[0])
     });
 
@@ -188,12 +188,14 @@ async function handler(m, { conn, text, command }) {
         currentQuestion: null,
         scores: {},
         timer: null,
-        starter: m.sender
+        starter: m.sender,
+        lastMsgId: null
     };
 
     const menuText = `🕵🏻‍♂️ *حلبة تحقيق المحقق الأسطوري* 🔍\n\n*الرجاء اختيار فئة الأنمي للتحدي انهارده:*\n\n1️⃣ ⇦ دراجون بول\n2️⃣ ⇦ جوجتسو كايسن\n3️⃣ ⇦ هانتر x هانتر\n4️⃣ ⇦ هجوم العمالقه\n5️⃣ ⇦ ون بيس\n6️⃣ ⇦ قتال الشياطين\n\n👉🏻 _رد على الرسالة دي برقم الأنمي [ من 1 إلى 6 ] عشان نبدأ الجولات فوراً!_`;
     
-    await conn.sendMessage(chatId, { text: menuText }, { quoted: m });
+    const menuMsg = await conn.sendMessage(chatId, { text: menuText }, { quoted: m });
+    global.detectiveGame[chatId].lastMsgId = menuMsg.key.id;
     startDetectiveTimeout(chatId, conn);
 }
 
@@ -201,6 +203,10 @@ handler.before = async (m, { conn }) => {
     const chatId = m.chat;
     const game = global.detectiveGame?.[chatId];
     if (!game || !m.text) return false;
+
+    // الشرط القاتل لمنع التداخل: التحقق من أن الرسالة عبارة عن رد (Reply) على رسالة البوت الأخيرة الخاصة باللعبة
+    const isReplyToBot = m.message?.extendedTextMessage?.contextInfo?.stanzaId === game.lastMsgId;
+    if (!isReplyToBot) return false;
 
     // المرحلة الأولى: اختيار فئة الأنمي بالرد
     if (game.stage === "choose") {
@@ -211,13 +217,12 @@ handler.before = async (m, { conn }) => {
         game.category = choice;
         game.stage = "playing";
 
-        // جلب الداتا الخاصة بالأنمي المختار وخلطها عشوائياً لضمان عدم التكرار
         let selectedData = [...ANIME_DATABASE[choice]];
         game.questionsPool = selectedData.sort(() => Math.random() - 0.5);
 
         await conn.sendMessage(chatId, { react: { text: "🚀", key: m.key } });
         await conn.sendMessage(chatId, { 
-            text: `🔥 *تم اختيار فئة: ${animeNames[choice]}*\n\nالتحدي مكون من *10 جولات متتالية* حماسية.. البوت هيعرض التلميحات وأسرع محقق هيكتب الاسم صح هيقفل النقط!\n\nالجولة الأولى نازلة حالا في السكة... 🔎🔥`
+            text: `🔥 *تم اختيار فئة: ${animeNames[choice]}*\n\nالتحدي مكون من *10 جولات متتالية* حماسية.. البوت هيعرض التلميحات وأسرع محقق هيكتب الاسم صح بالرد على السؤال هيقفل النقط!\n\nالجولة الأولى نازلة حالا في السكة... 🔎🔥`
         }, { quoted: m });
 
         setTimeout(() => nextRound(m, conn, chatId), 2000);
@@ -227,6 +232,7 @@ handler.before = async (m, { conn }) => {
     // المرحلة الثانية: لعب الجولات واستقبال الأجوبة
     if (game.stage === "playing" && game.currentQuestion) {
         if (!game.scores[m.sender]) {
+            game.scores[m.scores] = { correct: 0, wrong: 0 }; // تصحيح بسيط للتهيئة
             game.scores[m.sender] = { correct: 0, wrong: 0 };
         }
 
@@ -248,14 +254,14 @@ handler.before = async (m, { conn }) => {
                 await conn.sendMessage(chatId, { text: successMsg, mentions: [m.sender] }, { quoted: m });
                 setTimeout(() => nextRound(m, conn, chatId), 3000);
             } else {
-                successMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي! النتائج 👇🏻...*`;
+                successMsg += `🏁 *دي كانت الجولة الأخيرة في التحدي! النتائج 👇...*`;
                 await conn.sendMessage(chatId, { text: successMsg, mentions: [m.sender] }, { quoted: m });
                 setTimeout(() => finishDetectiveGame(m, conn, chatId), 2000);
             }
             return true;
         } 
         
-        // فحص الإجابات الغلط (شرط تكون كلمة أو كلمتين عشان ميردش على السوالف العادية)
+        // فحص الإجابات الغلط 
         else if (m.text.trim().split(/\s+/).length <= 2 && !m.text.startsWith('.')) {
             game.scores[m.sender].wrong += 1;
             await conn.sendMessage(chatId, { react: { text: "🤦🏻", key: m.key } });

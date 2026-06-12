@@ -92,7 +92,7 @@ async function runFlagGame(m, conn, round) {
         }, 30000)
     };
 
-    const caption = `📌 *تحدي العواصم وأعلام الدول الثقافي* 🌍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n👀 *اكتب اسم الدولة الصحيحة صاحب العلم ده فوراً في الشات!*`;
+    const caption = `📌 *تحدي الأعلام بدأ 👻🎌* \n\n \n*• الجولة الحالية:* [ *${round} من ${MAX_ROUNDS}* ]\n*• *الوقت المتاح: [ *30 ثانية* ]\n\n👀 *اكتب اسم الدولة بسرعة 🔥!*`;
     
     const msg = await conn.sendMessage(chatId, { image: { url: country.img }, caption: caption });
     if (g.current) g.current.id = msg.key.id;
@@ -155,7 +155,7 @@ async function handler(m, { conn, text, command }) {
 
     global.gameFlagCustom[chatId] = { round: 0, scores: {}, current: null };
     
-    await m.reply(`🌍 *تحدي الاعلام بدأ 🚩🎌!*\n\nالتحدي مكون من *10 جولات* سريعة.. ركزوا في العلم واكتبوا اسم الدولة بسرعة عشان تاخدو الصدارة والجوائز..\n\nالجولة الأولى ... 🚀🔥`);
+    await m.reply(`🌍 *تحدي الاعلام بدأ 👻🎌!*\n\nالتحدي مكون من *10 جولات* سريعة.. ركزوا في العلم واكتبوا اسم الدولة بسرعة عشان تاخدو الصدارة والجوائز..\n\nالجولة الأولى ... 🚀🔥`);
     
     setTimeout(() => runFlagGame(m, conn, 1), 2000);
 }

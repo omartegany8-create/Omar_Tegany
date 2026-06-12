@@ -86,7 +86,7 @@ handler.before = async (m, { conn }) => {
             }
             await conn.sendMessage(m.chat, { react: { text: "🎉", key: m.key } });
         } else {
-            text = `🤝 *تـعـادل ذكِـي ومـحـتـوم!* ⚖️\n\n${drawBoard(game.board)}\n\n> 💡 _البوت قفل الجيم تلقائي لأن مفيش أي خط فوز محتمل لأي لاعب.. اللعب متقفل ومفيهاش مكسب!_ 😉`;
+            text = `🤝 *تـعـادل ذكِـي ومـحـتـوم!* ⚖️\n\n${drawBoard(game.board)}\n\n> 💡 _البوت قفل الجيم تلقائي لأن مفيش أي خط فوز محتمل لأي لاعب.. اللعب متقفل ومفيهاش مكسب!_ 🐦🤙🏻`;
             await conn.sendMessage(m.chat, { react: { text: "⚖️", key: m.key } });
         }
         
@@ -100,7 +100,7 @@ handler.before = async (m, { conn }) => {
     const nextPlayer = game.turn === 'X' ? game.player1 : game.player2;
     
     const msg = await conn.sendMessage(m.chat, { 
-        text: `${drawBoard(game.board)}\n\n👉🏻 دورك يا أسطورة: @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
+        text: `${drawBoard(game.board)}\n\n👉🏻 دورك يا : @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
         mentions: [nextPlayer] 
     });
     

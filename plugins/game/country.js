@@ -73,13 +73,14 @@ async function runFlagGame(m, conn, round) {
         answer: country.name.trim().toLowerCase(),
         round: round,
         image: country.img,
+        id: null,
         timer: setTimeout(async () => {
             if (global.gameFlagCustom?.[chatId]?.current?.round === round) {
                 const correctAns = global.gameFlagCustom[chatId].current.answer;
                 global.gameFlagCustom[chatId].current = null;
                 
                 await conn.sendMessage(chatId, { 
-                    text: `⏰ *انتهى الوقت ومحدش جابها!* \n\nالعلم ده كان بتاع دولة: *${correctAns}* 🌍\n\nنجهز الجولة اللي بعدها حالا صحصحوا..` 
+                    text: `⏰ *انتهى الوقت ومحدش جابها!* \n\nالعلم ده كان: *${correctAns}* 🌍\n\nنجهز الجولة اللي بعدها حالا صحصحوا..` 
                 });
                 
                 if (round < MAX_ROUNDS) {
@@ -91,10 +92,10 @@ async function runFlagGame(m, conn, round) {
         }, 30000)
     };
 
-    const caption = `📌 *تحدي العواصم وأعلام الدول الثقافي* 🌍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n👀 *رد على الصورة دي فوراً بإسم الدولة الصحيحة صاحب العلم ده!*`;
+    const caption = `📌 *تحدي العواصم وأعلام الدول الثقافي* 🌍\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n👀 *اكتب اسم الدولة الصحيحة صاحب العلم ده فوراً في الشات!*`;
     
     const msg = await conn.sendMessage(chatId, { image: { url: country.img }, caption: caption });
-    g.current.id = msg.key.id;
+    if (g.current) g.current.id = msg.key.id;
 }
 
 async function endFlagGame(m, conn) {
@@ -104,7 +105,7 @@ async function endFlagGame(m, conn) {
     
     const entries = Object.entries(g.scores).sort((a, b) => b[1] - a[1]);
     if (entries.length === 0) {
-        await conn.sendMessage(chatId, { text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات كاملة!*\n\nبس للأسف مفيش ولا رحالة أو عبقري جغرافيا جمع نقطة.. الجروب كله أبيض في الخرايط! 🦦😂` });
+        await conn.sendMessage(chatId, { text: `🏁 *انتهت الـ ${MAX_ROUNDS} جولات كاملة!*\n\ للأسف مفيش ولا واحد جمع نقطة.. الجروب كله أبيض في الخرايط! 🦦` });
         delete global.gameFlagCustom[chatId];
         return;
     }
@@ -126,7 +127,7 @@ async function endFlagGame(m, conn) {
     const winner = entries[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *لوحة النتائج - نهاية تحدي الأعلام* 🏆\n\n${prizesList.join('\n\n')}\n\n🏅 *عاش يا رحالة! مبروك الصدارة يا @${winner.split('@')[0]} لفيت العالم في ثواني!* 😉🔥`,
+        text: `🏁 *لوحة النتائج - نهاية تحدي الأعلام* 🏆\n\n${prizesList.join('\n\n')}\n\n🏅 *عاش عليكم! مبروك الصدارة يا @${winner.split('@')[0]} لفيت العالم في ثواني!* 😉🔥`,
         mentions
     });
     
@@ -140,7 +141,7 @@ async function handler(m, { conn, text, command }) {
     const args = (text || '').trim().toLowerCase().split(' ');
     const cmd = args[0];
 
-    // ميزة الحذف الفوري
+    // ميزة الحذف الفوري والآمن
     if (cmd === 'حذف' || cmd === 'انهاء' || cmd === 'delete') {
         if (!global.gameFlagCustom[chatId]) return m.reply("❌ مفيش جولة أعلام شغالة حالياً عشان أحذفها!");
         if (global.gameFlagCustom[chatId].current?.timer) clearTimeout(global.gameFlagCustom[chatId].current.timer);
@@ -148,13 +149,13 @@ async function handler(m, { conn, text, command }) {
         return m.reply("🗑️ *تم إنهاء وإغلاق تحدي الأعلام.*");
     }
 
-    if (global.gameFlagCustom[chatId]) return m.reply(`⚠️ في تحدي أعلام شغال حالياً في الجروب!\n\nاكتب *.${command} حذف* لو حابب تقفله وتبدأ جولة مروقة.`);
+    if (global.gameFlagCustom[chatId]) return m.reply(`⚠️ في تحدي أعلام شغال حالياً في الجروب!\n\nاكتب *.${command} حذف* لو حابب تقفله وتبدأ جولة جديدة.`);
 
     await conn.sendMessage(chatId, { react: { text: "🗺️", key: m.key } });
 
     global.gameFlagCustom[chatId] = { round: 0, scores: {}, current: null };
     
-    await m.reply(`🌍 *تحدي الاعلام بدأ 🚩🎌!*\n\nالتحدي مكون من *10 جولات* سريعة.. ركزوا في العلم واكتبوا اسم الدولة طياري عشان تقفشوا الصدارة والجوائز..\n\nالجولة الأولى 👇🏻  ... 🚀🔥`);
+    await m.reply(`🌍 *تحدي الاعلام بدأ 🚩🎌!*\n\nالتحدي مكون من *10 جولات* سريعة.. ركزوا في العلم واكتبوا اسم الدولة بسرعة عشان تاخدو الصدارة والجوائز..\n\nالجولة الأولى ... 🚀🔥`);
     
     setTimeout(() => runFlagGame(m, conn, 1), 2000);
 }
@@ -167,16 +168,16 @@ handler.before = async (m, { conn }) => {
     const cur = g.current;
     const answer = m.text.trim().toLowerCase();
 
-    // فحص لو العضو جاوب صح على الرسالة الحالية
+    // 1. فحص لو العضو جاوب صح
     if (answer === cur.answer) {
         clearTimeout(cur.timer);
         g.current = null;
 
         g.scores[m.sender] = (g.scores[m.sender] || 0) + 1;
 
-        await conn.sendMessage(m.chat, { react: { text: "⚡", key: m.key } });
+        await conn.sendMessage(chatId, { react: { text: "⚡", key: m.key } });
 
-        let captionText = `🎉 *ماشاءالله سريع وجبتها في ثانية!* \n\nعاش يا @${m.sender.split('@')[0]} العلم فعلاً لـ (*${answer}*) 🏆\n🎯 مجموع نقاطك حالياً: [ *${g.scores[m.sender]} نقطة* ]\n\n`;
+        let captionText = `🎉 *ماشاءالله سريع وجبتها في ثانية!* \n\nعاش يا @${m.sender.split('@')[0]} العلم فعلاً لـ (*${m.text.trim()}*) 🏆\n🎯 مجموع نقاطك حالياً: [ *${g.scores[m.sender]} نقطة* ]\n\n`;
 
         const nextRound = cur.round + 1;
         if (nextRound <= MAX_ROUNDS) {
@@ -191,15 +192,14 @@ handler.before = async (m, { conn }) => {
         return true;
     } 
     
-    // فحص لو كتب اسم دولة تانية غلط (عشان الهزار والتريّقة الحية)
+    // 2. فحص لو كتب اسم دولة تانية غلط (يتفاعل فقط لو الكلمة مسجلة في أسماء الدول لمنع التداخل مع السوالف)
     else if (allFlagNames.includes(answer) && !answer.startsWith('.')) {
-        await conn.sendMessage(m.chat, { react: { text: "🤧", key: m.key } });
+        await conn.sendMessage(chatId, { react: { text: "🤧", key: m.key } });
         
         const flagRoasts = [
-            "❌ *لأ غلط !* أنت ساط جغرافيا باين؟ العلم ده في قارة تانية خالص يسطا! 😂🗺️",
+            "❌ *لأ غلط!* أنت ساط جغرافيا باين؟ العلم ده في قارة تانية خالص يسطا! 😂🗺️",
             "❌ *مش هو خالص!* روح ذاكر خرايط وتعال بسرعة عشان الجولة هتطير! 🧐",
-            "❌ *إجابة بريئة من الأطلس!* ركز في الألوان والرموز يا فنان وحاول تاني 
-            !"
+            "❌ *إجابة بريئة من الأطلس!* ركز في الألوان والرموز يا فنان وحاول تاني!"
         ];
         const randomRoast = flagRoasts[Math.floor(Math.random() * flagRoasts.length)];
         await m.reply(randomRoast);

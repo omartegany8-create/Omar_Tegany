@@ -32,7 +32,7 @@ async function sendWriteQuestion(m, conn, chatId) {
     const randomWord = wordsList[Math.floor(Math.random() * wordsList.length)];
     game.answer = randomWord.trim();
 
-    const msgText = `📌 *تحدي الكتابة الأسطوري السريع* ✍️⚡\n\n \n*• الجولة الحالية:* [ *${game.round} من ${MAX_ROUNDS}* ]\n*• الوقت المتاح: [ *30 ثانية* ]*\n\n🔥 *اكتب الكلمة دي بسرعة عشان تاخد الجولة:* \n\n👈🏻  *${randomWord}* 👉🏻\n\n_اكتب الكلمة صح وبدون غلطات إملائية !_`;
+    const msgText = `📌 *تحدي الكتابة السريعة* ✍️⚡\n\n \n*• الجولة الحالية:* [ *${game.round} من ${MAX_ROUNDS}* ]\n*• *الوقت المتاح: [ *30 ثانية* ]\n\n🔥 *اكتب الكلمة دي بسرعة عشان تاخد الجولة:* \n\n👈🏻  *${randomWord}* 👉🏻\n\n_اكتب الكلمة صح وبدون غلطات إملائية !_`;
     
     await conn.sendMessage(chatId, { text: msgText });
 

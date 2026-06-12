@@ -32,7 +32,7 @@ async function sendWriteQuestion(m, conn, chatId) {
     const randomWord = wordsList[Math.floor(Math.random() * wordsList.length)];
     game.answer = randomWord.trim();
 
-    const msgText = `📌 *تحدي الكتابة الأسطوري السريع* ✍️⚡\n\n*البيانات الحالية للجولة:*\n• الجولة الحالية: [ *${game.round} من ${MAX_ROUNDS}* ]\n• الوقت المتاح: [ *30 ثانية* ]\n\n🔥 *انقش الكلمة دي بأسرع سرعة عندك وطيران بالشات:* \n\n👉🏻  *${randomWord}* 👈🏻\n\n_اكتب الكلمة صح وبدون غلطة إملائية عشان تقفش النقطة!_`;
+    const msgText = `📌 *تحدي الكتابة الأسطوري السريع* ✍️⚡\n\n \n*• الجولة الحالية:* [ *${game.round} من ${MAX_ROUNDS}* ]\n*• الوقت المتاح: [ *30 ثانية* ]*\n\n🔥 *اكتب الكلمة دي بسرعة عشان تاخد الجولة:* \n\n👈🏻  *${randomWord}* 👉🏻\n\n_اكتب الكلمة صح وبدون غلطات إملائية !_`;
     
     await conn.sendMessage(chatId, { text: msgText });
 
@@ -84,7 +84,7 @@ async function finishWriteGame(m, conn, chatId) {
     const winner = finalScores[0][0];
 
     await conn.sendMessage(chatId, {
-        text: `🏁 *لوحة شرف الأبطال - نهاية تحدي الكتابة* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا صواريخ الكيبورد! الصدارة @${winner.split('@')[0]} إيدك سابقة الطلقة كالعادة!* 😉🔥`,
+        text: `🏁 *النتائج 👇🏻 - نهاية تحدي الكتابة* 🏆\n\n${leaderboard}\n\n🏅 *عاش يا صواريخ الكيبورد! الصدارة @${winner.split('@')[0]} إيدك سابقة الطلقة كالعادة!* 😉🔥`,
         mentions: finalScores.map(e => e[0])
     });
 
@@ -104,7 +104,7 @@ async function writeHandler(m, { conn, text, command }) {
         if (global.writeGame.games[chatId].timeout) clearTimeout(global.writeGame.games[chatId].timeout);
         delete global.writeGame.games[chatId];
         delete global.writeGame.scores[chatId];
-        return m.reply("🗑️ *تم إنهاء وإغلاق تحدي الكتابة وتصفير لوحة السرعة بنجاح.*");
+        return m.reply("🗑️ *تم إنهاء وإغلاق تحدي الكتابة.*");
     }
 
     if (global.writeGame.games[chatId]) {

@@ -1,15 +1,13 @@
 /*
-code: premium media to sticker (حقوق ميرو الفخمة)
+code: guaranteed media to sticker (حقوق ميرو الفخمة)
 by: 𝐓𝐨جي & Gemini
 */
-import { createSticker } from "../../system/utils.js";
 
 const handler = async (m, { conn, command }) => {
-    // تحديد الميديا سواء مقتبسة (quoted) أو الرسالة المباشرة نفسها
+    // التحقق من وجود ميديا مقتبسة أو رسالة مباشرة
     const q = m.quoted ? m.quoted : m;
     const mime = (q.msg || q).mimetype || '';
 
-    // التحقق إذا كانت الميديا صورة أو فيديو أو ملصق
     if (!/image|video|sticker/.test(mime)) {
         return m.reply("📸 *يرجى الرد على (صورة، فيديو، أو ملصق) لتحويله بحقوقك الفخمة!*");
     }
@@ -17,37 +15,41 @@ const handler = async (m, { conn, command }) => {
     await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
 
     try {
-        // تحميل الميديا وتحويلها لبافر
+        // تحميل الميديا كـ Buffer
         const mediaBuffer = await q.download();
         if (!mediaBuffer) throw new Error("Failed to download media");
 
-        // اسم الباك والمؤلف حسب طلبك بالملّي
+        // الحقوق الفخمة بتاعتك بالملّي
         const packName = "ᯓ 𝑩𝒚┆ 𓆩 𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺 ✮⃝";
         const authorName = "👻 𝑴𝑬𝑹𝑶 𓆪 ☁︎";
 
-        // صناعة الملصق الاحترافي
-        const stickerBuffer = await createSticker(mediaBuffer, {
-            mime: mime,
-            pack: packName,
-            author: authorName
-        });
+        // إرسال الملصق بالاعتماد على ميثود البوت الداخلية المضمونة (conn.sendImageAsSticker أو conn.sendFile)
+        // الفكرة هنا إننا بنباصي الـ pack و author جوه الـ options علطول
+        await conn.sendMessage(m.chat, { 
+            sticker: mediaBuffer,
+            packname: packName,
+            author: authorName,
+            contextInfo: contextInfoStyle(m.sender, "https://i.pinimg.com/736x/d5/c6/c1/d5c6c1f4a0562c5c7630ae59d19c33c8.jpg")
+        }, { quoted: m });
 
         await conn.sendMessage(m.chat, { react: { text: "🎴", key: m.key } });
 
-        // إرسال الملصق مع لوحة معلومات ميرو الجانبية
-        await conn.sendMessage(
-            m.chat,
-            { 
-                sticker: stickerBuffer, 
-                contextInfo: contextInfoStyle(m.sender, "https://i.pinimg.com/736x/d5/c6/c1/d5c6c1f4a0562c5c7630ae59d19c33c8.jpg") 
-            },
-            { quoted: m }
-        );
-
     } catch (error) {
         console.error(error);
-        await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
-        m.reply("❌ *حصل خطأ أثناء معالجة وصناعة الملصق، تأكد إن الميديا صالحة يسطا!*");
+        // محاولة بديلة لو الميثود الأولى علقت بسبب نوع الـ Buffer
+        try {
+            const mediaBuffer = await q.download();
+            await conn.sendFile(m.chat, mediaBuffer, 'sticker.webp', '', m, false, { 
+                asSticker: true, 
+                packname: "ᯓ 𝑩𝒚┆ 𓆩 𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺 ✮⃝", 
+                author: "👻 𝑴𝑬𝑹𝑶 𓆪 ☁︎" 
+            });
+            await conn.sendMessage(m.chat, { react: { text: "🎴", key: m.key } });
+        } catch (err) {
+            console.error(err);
+            await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
+            m.reply("❌ *حصلت مشكلة في تحويل الملصق بسورس البوت عندك!*");
+        }
     }
 };
 
@@ -56,7 +58,6 @@ handler.tags = ["sticker"];
 handler.command = ["ملصق", "sticker", "S", "s", "حقوق"];
 export default handler;
 
-// ستايل المينيو والـ Context الفخم الخاص بـ MERO AI
 const contextInfoStyle = (jid, img) => ({
     mentionedJid: [jid],
     isForwarded: true,

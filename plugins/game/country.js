@@ -92,7 +92,7 @@ async function runFlagGame(m, conn, round) {
         }, 30000)
     };
 
-    const caption = `📌 *تحدي الأعلام بدأ 👻🎌* \n\n \n*• الجولة الحالية:* [ *${round} من ${MAX_ROUNDS}* ]\n*• *الوقت المتاح: [ *30 ثانية* ]\n\n👀 *اكتب اسم الدولة بسرعة 🔥!*`;
+    const caption = `📌 *تحدي الأعلام بدأ 👻🎌* \n\n \n*• الجولة الحالية:* [ *${round} من ${MAX_ROUNDS}* ]\n*• *الوقت المتاح: [ 30 ثانية ]\n\n👀 *اكتب اسم الدولة بسرعة 🔥!*`;
     
     const msg = await conn.sendMessage(chatId, { image: { url: country.img }, caption: caption });
     if (g.current) g.current.id = msg.key.id;

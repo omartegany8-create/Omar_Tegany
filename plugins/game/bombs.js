@@ -112,7 +112,7 @@ handler.before = async (m, { conn }) => {
         });
         const gridFail = `${finalBoard[0]} | ${finalBoard[1]} | ${finalBoard[2]}\n${finalBoard[3]} | ${finalBoard[4]} | ${finalBoard[5]}\n${finalBoard[6]} | ${finalBoard[7]} | ${finalBoard[8]}`;
 
-        await m.reply(`💣💥💣💥💣💥💣💥💣💥\n💣     *بووووووم !!!*\n*لقد تفجرت في المنطقة [ ${move} ]* \n💣\n💥    ${gridFail}\n💣\n > ☠️💣 حظاً أوفر المرة القادمة، لقد\n💣 تفجرت وخسرت الكوكيز التي جمعتها!\n💥 *لو عايز تلعب تاني اكتب .متفجرات*\n💣 *وشوف حظك 👽💥*\n💥💣💥💣💥💣💥💣💥`);
+        await m.reply(`💣💥💣💥💣💥💣💥💣💥\n*بووووووم💣💥!!!*\n*لقد تفجرت في المنطقة [ ${move} ]* \n\n${gridFail}\n\n >حظاً أوفر المرة القادمة، لقد\nتفجرت وخسرت الكوكيز التي جمعتها!\n*لو عايز تلعب تاني اكتب .متفجرات*\n*وشوف حظك 👽💥*\n💥💣💥💣💥💣💥💣💥`);
         
         delete global.bombsGame[chatId];
         return true;

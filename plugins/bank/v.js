@@ -7,7 +7,7 @@ const handler = async (m, { conn, command, text }) => {
     
     if (command === "تسجيل") {
         if (!text) {
-            return m.reply(`*📝 طريقة التسجيل:*\n\nتسجيل الاسم|العمر\n\nمثال:\nتسجيل ڤينوم|20`);
+            return m.reply(`*📝 طريقة التسجيل:*\n\nتسجيل الاسم|العمر\n\nمثال:\nتسجيل omar|20`);
         }
         
         const [name, age] = text.split('|').map(s => s.trim());

@@ -63,44 +63,71 @@ let control = async (m, { command, text, conn, bot, participants }) => {
         }
         
         // ═════════════════ [ أمر طرد ] ═════════════════
-        if (command === "طرد") {
-            if (!user) {
+if (command === "طرد") {
+            // جلب قائمة كل الأعضاء المنشنين في الرسالة، أو العضو المردود عليه
+            let usersToKick = m.mentionedJid && m.mentionedJid.length > 0 ? m.mentionedJid : (m.quoted ? [m.quoted.sender] : []);
+
+            // إذا لم يتم تحديد أي عضو (لا منشن ولا رد)
+            if (usersToKick.length === 0) {
                 if (!isSenderAdmin && !isSenderOwner) return; // تجاهل العضو العادي
-                return m.reply("*🕷️ منشن أو رد على العضو اللي عايز تطرده*");
+                return m.reply("*🕷️ منشن عضو، أو رد على الشخص اللي عايز تطرده*");
             }
 
-            // [تأمين المحاكاة]: لو الأمر مبعوث من البوت نفسه (fromMe) والمستهدف هو الأونر نفسه، يبقى ده غلط في قراءة الـ Sender وتداخل، نوقفه فوراً!
-            if (m.sender === BOT_NUMBER && isBotOwner(user)) {
-                return; 
+            // مصفوفة لتجميع الأعضاء المستحقين للطرد الشرعي بعد الفحص
+            let finalKickList = [];
+
+            for (let targetUser of usersToKick) {
+                // [تأمين المحاكاة]: لو الأمر مبعوث من البوت نفسه والمستهدف هو الأونر نفسه، يتجاهله
+                if (m.sender === BOT_NUMBER && isBotOwner(targetUser)) {
+                    continue; 
+                }
+
+                // 1. الأمان الأكبر: لو حد جرب يطردك إنت كـ مطور البوت -> طرد فوري للفاعل وقفل العملية
+                if (isBotOwner(targetUser)) {
+                    await m.reply("بتهزر معي ؟");
+                    return await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+                }
+
+                // فحص هل المستهدف الحالي مشرف في الجروب
+                // (تأكد أن متغير participants متاح عندك في السورس كـ metadata.participants)
+                const isTargetAdmin = participants ? participants.some(p => p.id === targetUser && p.admin) : false;
+
+                // 2. فخ الحماية: لو عضو عادي جرب يطرد مشرف
+                if (!isSenderAdmin && !isSenderOwner && isTargetAdmin) {
+                    await m.reply("*يجدع؟ 😂 طب بص تحت كدا 👇🏻*");
+                    await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+                    return conn.sendMessage(m.chat, {
+                        text: `*صاحبنا دمو خفيف كان عايز يطردني 🥰*`
+                    });
+                }
+
+                // 3. منع الأعضاء العاديين من طرد بعضهم البعض
+                if (!isSenderAdmin && !isSenderOwner) {
+                    return m.reply("❌انت مالك بالاوامر دي ؟ متستخدمهاش تاني احسنلك !");
+                }
+
+                // منع البوت من طرد نفسه بالخطأ لو حصل تداخل
+                if (targetUser === BOT_NUMBER) {
+                    m.reply("❌ عايزني أطرد نفسي يسطا؟ مش للدرجادي! 😂");
+                    continue;
+                }
+
+                // إذا تخطى كل الفحوصات بسلام، يضاف لقائمة الطرد
+                finalKickList.push(targetUser);
             }
 
-            // 1. الأمان الأكبر: لو حد جرب يطردك إنت كـ مطور البوت -> طرد فوري للفاعل
-            if (isBotOwner(user)) {
-                await m.reply("بتهزر معي ؟");
-                return await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-            }
-
-            // 2. فخ الحماية: لو عضو عادي جرب يطرد مشرف
-            if (!isSenderAdmin && !isSenderOwner && isTargetAdminCheck) {
-                await m.reply("*يجدع؟ 😂 طب بص تحت كدا 👇🏻*");
-                await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+            // تنفيذ الطرد الجماعي الشرعي للأعضاء المحددين
+            if (finalKickList.length > 0) {
+                await conn.groupParticipantsUpdate(m.chat, finalKickList, 'remove');
+                
+                // تنسيق رسالة التأكيد بناءً على عدد المطرودين
+                let kickedMentions = finalKickList.map(u => `@${u.split('@')[0]}`).join(', ');
                 return conn.sendMessage(m.chat, {
-                    text: `*صاحبنا دمو خفيف كان عايز يطردني 🥰*`
-                });
+                    text: `*🕷️ تم طرد:* ${kickedMentions}`,
+                    mentions: finalKickList
+                }, { quoted: m });
             }
-
-            // 3. منع الأعضاء العاديين من طرد بعضهم البعض
-            if (!isSenderAdmin && !isSenderOwner) {
-                return m.reply("❌انت مالك بالاوامر دي ؟ متستخدمهاش تاني احسنلك !");
-            }
-
-            // منع البوت من طرد نفسه بالخطأ لو حصل تداخل
-            if (user === BOT_NUMBER) return m.reply("❌ عايزني أطرد نفسي يسطا؟ مش للدرجادي! 😂");
-
-            // الطرد الشرعي للأدمن والمطور
-            await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
-            return m.reply("*🕷️ تم الطرد بنجاح*");
-        }
+}
         
         // ═════════════════ [ أمر رفع ] ═════════════════
         if (command === "رفع") {

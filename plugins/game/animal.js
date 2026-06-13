@@ -111,7 +111,7 @@ async function endAnimalGame(m, conn) {
             global.db.users[id].xp = (global.db.users[id].xp || 0) + prize.xp;
             global.db.users[id].cookies = (global.db.users[id].cookies || 0) + prize.cookies;
         }
-        prizesList.push(`${prize.emoji} *المركز ${i + 1}:* @${id.split('@')[0]}\n   🎯 تجميع صح: *${score} جولات* | 🎁 جوائز: *+${prize.xp} XP* & *🍪 +${prize.cookies} كوكي👇🏻ز*\n─────────────────────`);
+        prizesList.push(`${prize.emoji} *المركز ${i + 1}:* @${id.split('@')[0]}\n   🎯 تجميع صح: *${score} جولات* | 🎁 جوائز: *+${prize.xp} XP* & *🍪 +${prize.cookies} كوكيز*\n─────────────────────`);
     }
 
     await conn.sendMessage(chatId, {

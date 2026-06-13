@@ -26,7 +26,7 @@ async function handler(m, { command, text, conn }) {
             };
             // ريأكت الدائرة عند بدء اللعبة
             await conn.sendMessage(m.chat, { react: { text: "⭕", key: m.key } });
-            return m.reply(`🎮 *تـحـدي لعبة XO الممتعة! * ✨\n\n👑 الاعب : @${m.sender.split('@')[0]} في انتظار خصم لتحديه..\n\n> 💡 _عايز تنزل تلعب ضده؟ اكتب بس 👈🏻 *.${command}*_`, null, { mentions: [m.sender] });
+            return m.reply(`🎮 *تـحـدي لعبة XO الممتعة!* ✨\n\n👑 الاعب : @${m.sender.split('@')[0]} في انتظار خصم لتحديه..\n\n> 💡 _عايز تنزل تلعب ضده؟ اكتب بس 👈🏻 *.${command}*_`, null, { mentions: [m.sender] });
         }
         
         if (game.status === 'waiting') {
@@ -38,7 +38,7 @@ async function handler(m, { command, text, conn }) {
             await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
             
             const msg = await conn.sendMessage(m.chat, { 
-                text: `⚔️ *بـدأت مـلـحـمـة الـذكـاء والـتـحـدي!* 🔥\n\n${drawBoard(game.board)}\n\n❌ ⇦ @${game.player1.split('@')[0]}\n⭕ ⇦ @${game.player2.split('@')[0]}\n\n────────────────\n⚡ الدور الأول والبداية عند: @${game.player1.split('@')[0]} (❌)\n👉🏻 _اكتب رقم المربع من [1 إلى 9]!_`,
+                text: `⚔️ *بـدأت مـلـحـمـة الـذكـاء والـتـحـدي!* 🔥\n\n${drawBoard(game.board)}\n\n❌ ⇦ @${game.player1.split('@')[0]}\n⭕ ⇦ @${game.player2.split('@')[0]}\n\n────────────────\n⚡ الدور الأول والبداية عند: @${game.player1.split('@')[0]} (❌)\n🦦 _اكتب رقم المربع من [1 إلى 9]!_`,
                 mentions: [game.player1, game.player2] 
             });
             
@@ -86,7 +86,7 @@ handler.before = async (m, { conn }) => {
             }
             await conn.sendMessage(m.chat, { react: { text: "🎉", key: m.key } });
         } else {
-            text = `🤝 *تـعـادل ذكِـي ومـحـتـوم!* ⚖️\n\n${drawBoard(game.board)}\n\n> 💡 _البوت قفل الجيم تلقائي لأن مفيش أي خط فوز محتمل لأي لاعب.. اللعب متقفل ومفيهاش مكسب!_ 🐦🤙🏻`;
+            text = `🤝 *تـعـادل ذكِـي ومـحـتـوم!* ⚖️\n\n${drawBoard(game.board)}\n\n> 💡 _البوت قفل الجيم تلقائي لأن مفيش أي خط فوز محتمل لأي لاعب.. اللعب متقفل ومفيهاش مكسب حاول تغير رقم 5 دا شوية !_ 🐦🤙🏻`;
             await conn.sendMessage(m.chat, { react: { text: "⚖️", key: m.key } });
         }
         
@@ -100,7 +100,7 @@ handler.before = async (m, { conn }) => {
     const nextPlayer = game.turn === 'X' ? game.player1 : game.player2;
     
     const msg = await conn.sendMessage(m.chat, { 
-        text: `${drawBoard(game.board)}\n\n👉🏻 دورك يا : @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
+        text: `${drawBoard(game.board)}\n\n🦦 دورك يا : @${nextPlayer.split('@')[0]} (${game.turn === 'X' ? '❌' : '⭕'})`,
         mentions: [nextPlayer] 
     });
     

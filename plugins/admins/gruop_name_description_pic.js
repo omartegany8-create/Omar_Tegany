@@ -6,8 +6,11 @@ by: 𝐓𝐨جي & Gemini
 const handler = async (m, { conn, text, command }) => {
     if (!m.isGroup) return m.reply('❌ الأمر ده للجروبات بس يسطا!');
 
+    // تحويل الأوامر البديلة للاسم الأساسي عشان الـ actions تشتغل صح
+    let actCommand = command;
+    if (command === 'pin' || command === 'بن') actCommand = 'تثبيت';
+
     const actions = {
-        // ربط الكوماند بالـ Key الصحيح عشان يشتغل فوراً
         'جروب_اسم': async () => {
             if (!text) return m.reply('✏️ ~ اكتب الاسم الجديد اللي عايزه للجروب');
             await conn.groupUpdateSubject(m.chat, text);
@@ -22,7 +25,7 @@ const handler = async (m, { conn, text, command }) => {
 
         'جروب_صوره': async () => {
             const q = m.quoted ? m.quoted : m;
-            const mime = (q.msg || q).mimetype || '';
+            const mime = q.mimetype || (q.msg && q.msg.mimetype) || '';
 
             if (!/image/.test(mime)) {
                 return m.reply('🖼️ ~ رد على صورة فخمة عشان أحطها للجروب!');
@@ -31,30 +34,38 @@ const handler = async (m, { conn, text, command }) => {
             await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
             const media = await q.download();
             
-            // استخدام الميثود الأضمن والأحدث لتغيير صورة المجموعة
+            // تحديث الصورة بميثود Baileys المستقرة
             await conn.updateProfilePicture(m.chat, media);
             await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
             m.reply('✅ ~ تم تغيير صورة الجروب بنجاح يا فنان.');
         },
 
         'تثبيت': async () => {
-            // التحقق من أن الأدمن رد على الرسالة المراد تثبيتها
+            // التحقق من وجود رسالة مقتبسة
             if (!m.quoted) return m.reply('📌 ~ رد على الرسالة اللي عايز تثبتها في الجروب فوراً!');
 
             await conn.sendMessage(m.chat, { react: { text: "📌", key: m.key } });
 
-            // ميثود التثبيت الرسمية والذكية في تحديثات الواتساب (Baileys)
+            // بناء مفتاح الرسالة (Key) المضمون بدون الاعتماد على fakeObj
+            const targetKey = {
+                remoteJid: m.chat,
+                id: m.quoted.id,
+                fromMe: m.quoted.fromMe,
+                participant: m.quoted.sender
+            };
+
+            // ميثود التثبيت الرسمية لـ Baileys
             await conn.sendMessage(m.chat, {
-                pin: m.quoted.fakeObj.key,
-                type: 1, // النوع 1 يعني تثبيت الرسالة (Pin)
-                time: 2592000 // مدة التثبيت التلقائي بالثواني (هنا حد أقصى 30 يوم)
+                pin: targetKey,
+                type: 1, // 1 لتثبيت الرسالة
+                time: 2592000 // مدة التثبيت بالثواني (30 يوم)
             });
             
             m.reply('✅ ~ تم تثبيت الرسالة بنجاح في أعلى الشات للأهمية.');
         }
     };
 
-    const action = actions[command];
+    const action = actions[actCommand];
     if (!action) return;
 
     try {
@@ -65,12 +76,11 @@ const handler = async (m, { conn, text, command }) => {
     }
 };
 
-// تجميع كل الأوامر والـ Shortcuts المروقة
 handler.command = ['جروب_اسم', 'جروب_وصف', 'جروب_صوره', 'تثبيت', 'بن', 'pin'];
 handler.usage = ['جروب_اسم', 'جروب_وصف', 'جروب_صوره', 'تثبيت'];
 handler.category = "admin";
 handler.group = true;
-handler.admin = true;    // الأمر للأدمن فقط
-handler.botAdmin = true; // يتطلب أن يكون البوت أدمن لتنفيذ التغييرات والتثبيت
+handler.admin = true;    
+handler.botAdmin = true; 
 
 export default handler;

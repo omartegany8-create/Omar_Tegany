@@ -10,7 +10,14 @@ async function handler(m, { command, text, conn }) {
 
     if (isDelete) {
         if (!game) return m.reply("❌ مفيش لعبة XO شغالة في عشان أحذفها يسطا!");
-        if (game.player1 !== m.sender && game.player2 !== m.sender) return m.reply("❌ العب بعيد يا شاطر.. اللي بدأوا الجيم بس هما اللي يقدروا يحذفوه! 🤫🔥");
+        
+        // 👑 الفحص المطور الجديد: لو اللي كاتب الأمر هو الأونر/المطور، يتخطى الشرط فوراً ويقفل الجيم
+        const isOwner = global.isBotOwner ? global.isBotOwner(m.sender) : (m.sender.includes('201') || m.fromMe);
+        
+        if (!isOwner && game.player1 !== m.sender && game.player2 !== m.sender) {
+            return m.reply("❌ العب بعيد يا شاطر.. اللي بدأوا الجيم بس هما اللي يقدروا يحذفوه! 🤫🔥");
+        }
+        
         delete global.xoGames[m.chat];
         return m.reply("🗑️ *أبشر! تم إلغاء وحذف جولة الـ XO.*");
     }

@@ -16,41 +16,43 @@ const handler = async (m, { conn, command }) => {
     if (!userExists) return m.reply("❌ *المستخدم ده مش موجود في الجروب يسطا!*");
 
     // 🛡️ فخ الحماية الأسطوري: لو حد جرب يديك إنت (مطور البوت) إنذار
-    // تأكد من وجود دالة isBotOwner أو فحص الأيدي الخاص بك في السورس
-    if (global.isBotOwner ? global.isBotOwner(targetJid) : targetJid.稳定 === m.sender || targetJid.includes('201')) { 
+    // الفحص هنا بيبص على دالة الأونر أو لو الرقم المكتوب فيه رقمك (تلقائي)
+    const isTargetOwner = global.isBotOwner ? global.isBotOwner(targetJid) : (targetJid === m.sender || targetJid.includes('201'));
+    
+    if (isTargetOwner) { 
         await conn.sendMessage(m.chat, { react: { text: "👑", key: m.key } });
         
-        // تغيير الهدف ليكون الفاعل نفسه (الشخص اللي كتب الأمر)
+        // عودة الحق على الفاعل (الشخص اللي كتب الأمر)
         targetJid = m.sender;
 
         const ownerRoasts = [
             "⚠️ *بتحاول تدي إنذار للمطور؟* 😂 طب خد عندك بقا الإنذار ده ليك إنت!",
-            
             "⚠️ *إيدك سبقت عقلك؟* 🪄 الحركة دي هتكلفك يغالي.. الإنذار اتحول ليك!"
         ];
         const randomRoast = ownerRoasts[Math.floor(Math.random() * ownerRoasts.length)];
         await m.reply(randomRoast);
     }
 
-    // تجهيز الداتا بيز للجروب والإنذارات بشكل آمن وموحد على الـ Jid
-    global.db.data.chats ??= {};
-    global.db.data.chats[m.chat] ??= {};
-    global.db.data.chats[m.chat].warnings ??= {};
+    // تجهيز الداتا بيز للجروب بناءً على سستم السورس عندك عشان ميعملش خطأ
+    global.db ??= {};
+    global.db.groups ??= {};
+    global.db.groups[m.chat] ??= {};
+    global.db.groups[m.chat].warnings ??= {};
     
-    const warningsDB = global.db.data.chats[m.chat].warnings;
+    const warningsDB = global.db.groups[m.chat].warnings;
 
-    // زيادة عدد الإنذارات للشخص المستهدف (سواء المشاغب أو اللي اتقلب عليه الأمر)
+    // زيادة عدد الإنذارات للشخص المستهدف
     const warnCount = warningsDB[targetJid] = (warningsDB[targetJid] || 0) + 1;
 
     await conn.sendMessage(m.chat, { react: { text: "⚠️", key: m.key } });
 
     // إرسال رسالة الإنذار الفخمة والمنسقة
     await conn.sendMessage(m.chat, {
-        text: `⚠️ *تـم إعـطـاء إنـذار جـديـد!* ⚠️\n\n👤 *الـمـسـتـهدف:* @${targetJid.split("@")[0]}\n📊 *إجمالي الإنذارات:* [ *${warnCount} من 3* ]\n\n>روق كدا عشان متكلش طرد المره الجاية!_ 🚷`,
+        text: `⚠️ *تـم إعـطـاء إنـذار جـديـد!* ⚠️\n\n👤 *الـمـسـتـهدف:* @${targetJid.split("@")[0]}\n📊 *إجمالي الإنذارات:* [ *${warnCount} من 3* ]\n\n> روق كدا عشان متكلش طرد المره الجاية! _ 🚷`,
         mentions: [targetJid]
     }, { quoted: m });
 
-    // 🚷 الفحص الفوري: لو وصل 3 إنذارات يطرد في نفس الثانية بدل ما نستنى يكتب رسالة
+    // 🚷 الفحص الفوري: لو وصل 3 إنذارات يطرد في نفس الثانية
     if (warnCount >= 3) {
         await conn.sendMessage(m.chat, {
             text: `🚫 @${targetJid.split("@")[0]} *أنت تخطيت الحد الأقصى من القوانين والإنذارات (3/3).. مع السلامة يا حب!* 🚪✈️`,
@@ -64,8 +66,7 @@ const handler = async (m, { conn, command }) => {
 
 // الـ قبل (before) يفضل شغال لحماية الجروب لو فيه داتا قديمة متسجلة
 handler.before = async (m, { conn }) => {
-    global.db.data.chats ??= {};
-    const g = global.db.data.chats[m.chat];
+    const g = global.db?.groups?.[m.chat];
     if (!g?.warnings) return false;
 
     const user = m.sender;
@@ -82,11 +83,11 @@ handler.before = async (m, { conn }) => {
     return false;
 };
 
-handler.command = ["انذار", "تحذير", "warn"];
+handler.command = ["انذار", "كارت اصفر", "warn"];
 handler.usage = ['انذار'];
 handler.category = "admin";
-handler.group = true;       // يشتغل في الجروبات بس
-handler.admin = true;       // للمشرفين
-handler.botAdmin = true;    // لازم البوت يكون مشرف
+handler.group = true;       
+handler.admin = true;       
+handler.botAdmin = true;    
 
 export default handler;

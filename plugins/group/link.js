@@ -2,20 +2,20 @@ let handler = async (m, {
     conn
 }) => {
     try {
-        m.reply(`┄────────── °❀° ┄──────────
+        m.reply(`*┄────────── °❀° ┄──────────*
 🌷┊ *رابـــط الـــمـــجـــمـــوعـــة:*
 🌷┊ *${(await conn.groupMetadata(m.chat)).subject}*
 🌷┊ *https://chat.whatsapp.com/` + await conn.groupInviteCode(m.chat) + `*
 🌷┊ *رابـــط الاستقبال:*
 🌷┊ ${conn.user.name || "https://chat.whatsapp.com/LUFdrmHVmlKEbkO26rOFfG
 "}
-──────────┄ °❀° ┄──────────`)
+*──────────┄ °❀° ┄──────────*`)
     } catch {
         const mentionedUser = conn.user.id.split(":")[0] + "@s.whatsapp.net";
         conn.sendMessage(m.chat, { 
-            text: `❀° ┄──────────╮
+            text: `*──────────┄ °❀° ┄──────────*
 🌷┊ @${mentionedUser.split('@')[0]} غير مسموح لك باستخدام هذا الامر!
-╰──────────┄ °❀`, 
+*──────────┄ °❀° ┄──────────*`, 
             mentions: [mentionedUser]
         })
     }

@@ -1,7 +1,4 @@
-/*
-code: ultimate context matching avatars (سيستم التطقيم الشامل والفخم)
-by: 𝐓𝐨جي & Gemini
-*/
+
 
 const handler = async (m, { conn, command }) => {
     // 1. ريأكت البدء والتحضير

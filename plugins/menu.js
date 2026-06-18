@@ -126,5 +126,5 @@ ${cmdsList}
     return true;
 };
 
-menu.command = ['الاوامر', 'القائمة', 'menu', 'اوامر'];
+menu.command = ['', 'القائمة', 'menu', ''];
 export default menu;

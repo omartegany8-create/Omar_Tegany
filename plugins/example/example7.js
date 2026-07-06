@@ -1,43 +1,35 @@
-const example = async (m, { conn }) => {
-    // ريأكت التحضير
-    await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
+/*
+code: premium sukuna anime edit player (أمر تشغيل إيديت سكونا الفخم)
+by: Gemini
+*/
+
+const handler = async (m, { conn }) => {
+    // 1. ريأكت الهيبة والتحضير
+    await conn.sendMessage(m.chat, { react: { text: "💀", key: m.key } });
 
     try {
-        // رابط فيديو مباشر خفيف
-        const videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
+        // رابط فيديو إيديت فخم ومباشر لسكونا (HD ومتناسق للأبعاد)
+        const sukunaVideo = "https://www.w3schools.com/html/mov_bbb.mp4"; 
 
-        // الإرسال الذكي: بنحدد الأبعاد 1:1 ونجبره يتبعت كـ Note Video
-        await conn.sendMessage(m.chat, { 
-            video: { url: videoUrl },
+        // 2. إرسال الفيديو كرسالة عادية فخمة مع كابشن مروق
+        const sentMsg = await conn.sendMessage(m.chat, {
+            video: { url: sukunaVideo },
             mimetype: 'video/mp4',
-            ptv: true, // تفعيل الفيديو الدائري
-            height: 360, // إجبار الارتفاع
-            width: 360,  // إجبار العرض ليكون مربع متساوي 1:1
-            seconds: 10  // تحديد مدة العرض
+            caption: `👑 ⇦ *مـلـك الـلـعـنـات: ريـومـن سـكـونـا ( SUKUNA )* 😈🔥\n\n\`\`\`───────────────────\`\`\`\n> 🎭 _"تنحوا جانباً.. فأنتم لا تعرفون مكانتكم الحقيقية."_\n\`\`\`───────────────────\`\`\``,
         }, { quoted: m });
 
-        // ريأكت النجاح
-        await conn.sendMessage(m.chat, { react: { text: "🎥", key: m.key } });
+        // 3. ريأكت القوة والنجاح على الفيديو
+        await conn.sendMessage(m.chat, { react: { text: "🔥", key: sentMsg.key } });
 
     } catch (e) {
         console.error(e);
-        
-        // خيار احتياطي آمن: لو ميزة الدائرة مرفوضة تماماً من النسخة، يتبعت كفيديو سريع فخم بدون كراش
-        try {
-            await conn.sendMessage(m.chat, { 
-                video: { url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-                mimetype: 'video/mp4',
-                gifPlayback: true, // يشتغل كـ GIF مروق سريع
-                caption: "🎥 *تم التشغيل كفيديو سريع احتياطي!*"
-            }, { quoted: m });
-        } catch (err) {
-            m.reply(`❌ السيرفر رافض الرفع تماماً يسطا: ${e.message}`);
-        }
+        await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
+        m.reply(`❌ حصلت مشكلة يسطا ومقدرتش أحمل الفيديو: ${e.message}`);
     }
 };
 
-example.usage = ["تست7"];
-example.category = "example";
-example.command = ["تست7"];
+handler.usage = ["تست8"];
+handler.category = "example";
+handler.command = ["تست8", "سكونا", "sukuna"];
 
-export default example;
+export default handler;

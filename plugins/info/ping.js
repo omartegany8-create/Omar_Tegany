@@ -8,10 +8,7 @@ const handler = async (m, { conn }) => {
     img: "https://i.pinimg.com/736x/73/56/32/735632c6fa8e665c249abbc8a340b77d.jpg",
     title: "𝐒𝐩𝐞𝐞𝐝 / 𝐓𝐞𝐬𝐭",
     body: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
-    newsletter: {
-      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-      jid: ''
-    },
+    
     big: false
   }, global.reply_status);
 };

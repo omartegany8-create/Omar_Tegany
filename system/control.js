@@ -35,10 +35,7 @@ const group = async (ctx, event, eventType) => {
             title: ctx.config?.info.nameBot || "WhatsApp Bot",
             body: "𝐴 𝑠𝑖𝑚𝑝𝑙𝑒 𝑊𝒉𝑎𝑡𝑠𝐴𝑝𝑝 𝑏𝑜𝑡 𝑓𝑜𝑟 𝑏𝑒𝑔𝑖𝑛𝑛𝑒𝑟𝑠, 𝑏𝑦 𝑴𝑬𝑹𝑶",
             mentions: author ? [author, ...participants] : participants,
-            newsletter: {
-                name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-                jid: ''
-            },
+            
             big: ["remove", "add"].includes(eventType)
         });
 
@@ -83,10 +80,7 @@ const access = async (msg, checkType, time) => {
             img: "https://i.pinimg.com/originals/02/c3/51/02c351dfd4eb72a62f225ce964dc510d.jpg",
             title: "𝑴𝑬𝑹𝑶 𝑨𝑰",
             body: "𝐵𝑜𝑡 𝑎𝑙𝑒𝑟𝑡𝑠: 𝑅𝑒𝑎𝑑 𝑡𝒉𝑒 𝑚𝑒𝑠𝑠𝑎𝑔𝑒 𝑡𝑜 𝑙𝑒𝑎𝑟𝑛 𝑚𝑜𝑟𝑒",
-            newsletter: {
-                name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-                jid: ''
-            },
+            
             big: false
         }, quoted);
         return false;  

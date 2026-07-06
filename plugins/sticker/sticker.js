@@ -1,78 +1,65 @@
-/*
-code: guaranteed media to sticker (حقوق ميرو الفخمة)
-by: 𝐓𝐨جي & Gemini
-*/
+import { addExif } from '../lib/sticker.js'
 
-const handler = async (m, { conn, command }) => {
-    // التحقق من وجود ميديا مقتبسة أو رسالة مباشرة
-    const q = m.quoted ? m.quoted : m;
-    const mime = (q.msg || q).mimetype || '';
-
-    if (!/image|video|sticker/.test(mime)) {
-        return m.reply("📸 *يرجى الرد على (صورة، فيديو، أو ملصق) لتحويله بحقوقك الفخمة!*");
+let handler = async (m, { conn, text }) => {
+    const react = async (emoji) => {
+        try { await conn.sendMessage(m.chat, { react: { text: emoji, key: m.key } }) } catch {}
     }
 
-    await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
+    // ━━━ 1. التأكد من وجود رد على استيكر ━━━
+    if (!m.quoted) {
+        await react('❌')
+        return m.reply('❌ *يا حب، لازم تعمل ريبلاي (رد) على الاستيكر اللي عايز تغير حقوقه!*')
+    }
 
+    // ━━━ 2. فصل اسم الحزمة واسم المؤلف وتحديد الافتراضي ━━━
+    let packname, author
+    
+    if (text) {
+        let parts = text.split('|')
+        packname = parts[0] ? parts[0].trim() : '—̳͟͞͞☁️ 𓆩𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺𓆪 🕸️⃟🕷️'
+        author = parts[1] ? parts[1].trim() : '𓆩𝑴𝑬𝑹𝑶𓆪🕯️ ☁︎'
+    } else {
+        // الحقوق الافتراضية الصايعة بتاعتك لو مأكتبش حاجة
+        packname = '—̳͟͞͞☁️ 𓆩𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺𓆪 🕸️⃟🕷️'
+        author = '𓆩𝑴𝑬𝑹𝑶𓆪🕯️ ☁︎'
+    }
+
+    // رياكشن الانتظار والبدء
+    await react('⏳')
+
+    let stiker = false
     try {
-        // تحميل الميديا كـ Buffer
-        const mediaBuffer = await q.download();
-        if (!mediaBuffer) throw new Error("Failed to download media");
-
-        // الحقوق الفخمة بتاعتك بالملّي
-        const packName = "ᯓ 𝑩𝒚┆ 𓆩 𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺 ✮⃝";
-        const authorName = "👻 𝑴𝑬𝑹𝑶 𓆪 ☁︎";
-
-        // إرسال الملصق بالاعتماد على ميثود البوت الداخلية المضمونة (conn.sendImageAsSticker أو conn.sendFile)
-        // الفكرة هنا إننا بنباصي الـ pack و author جوه الـ options علطول
-        await conn.sendMessage(m.chat, { 
-            sticker: mediaBuffer,
-            packname: packName,
-            author: authorName,
-            contextInfo: contextInfoStyle(m.sender, "https://i.pinimg.com/736x/d5/c6/c1/d5c6c1f4a0562c5c7630ae59d19c33c8.jpg")
-        }, { quoted: m });
-
-        await conn.sendMessage(m.chat, { react: { text: "🎴", key: m.key } });
-
-    } catch (error) {
-        console.error(error);
-        // محاولة بديلة لو الميثود الأولى علقت بسبب نوع الـ Buffer
-        try {
-            const mediaBuffer = await q.download();
-            await conn.sendFile(m.chat, mediaBuffer, 'sticker.webp', '', m, false, { 
-                asSticker: true, 
-                packname: "ᯓ 𝑩𝒚┆ 𓆩 𝑺𝑻𝑰𝑪𝑲𝑬𝑹𝑺 ✮⃝", 
-                author: "👻 𝑴𝑬𝑹𝑶 𓆪 ☁︎" 
-            });
-            await conn.sendMessage(m.chat, { react: { text: "🎴", key: m.key } });
-        } catch (err) {
-            console.error(err);
-            await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
-            m.reply("❌ *حصلت مشكلة في تحويل الملصق بسورس البوت عندك!*");
+        let mime = m.quoted.mimetype || ''
+        if (!/webp/.test(mime)) {
+            await react('❌')
+            return m.reply('❌ *ده مش استيكر يسطا! تأكد انك عامل ريبلاي على استيكر حقيقي.*')
+        }
+        
+        // تحميل داتا الاستيكر
+        let img = await m.quoted.download()
+        if (!img) throw new Error('فشل تحميل الاستيكر')
+        
+        // حقن الحقوق الجديدة المخفية (EXIF) داخل ملف الاستيكر
+        stiker = await addExif(img, packname, author)
+        
+    } catch (e) {
+        console.error(e)
+        if (Buffer.isBuffer(e)) stiker = e
+    } finally {
+        if (stiker) {
+            // إرسال الاستيكر الجديد بالحقوق المعدلة
+            await conn.sendMessage(m.chat, { sticker: stiker }, { quoted: m })
+            await react('✅')
+        } else {
+            await react('❌')
+            throw '⚠️ حصلت مشكلة أثناء حقن الحقوق الجديدة في ملف الاستيكر.'
         }
     }
-};
+}
 
-handler.help = ["ملصق"];
-handler.tags = ["sticker"];
-handler.command = ["ملصق", "sticker", "S", "s", "حقوق"];
-export default handler;
+handler.help = ['st <حزمة>|<مؤلف>']
+handler.tags = ['sticker']
+handler.command = /^(st|حقوق)$/i // الاختصار السريع .st
 
-const contextInfoStyle = (jid, img) => ({
-    mentionedJid: [jid],
-    isForwarded: true,
-    forwardingScore: 1,
-    forwardedNewsletterMessageInfo: {
-        newsletterJid: '',
-        newsletterName: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-        serverMessageId: 0
-    },
-    externalAdReply: {
-        title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
-        body: "𝚆𝚑𝚊𝒕𝒔𝙰𝒑𝒑 𝚋𝚘𝒕 𝒕𝒉𝒂𝒕 𝒊𝒔 𝒆𝒂𝒔𝒚 𝒕𝒐 𝒎𝒐𝒅𝒊𝒇𝒚 𝒂𝒏𝒅 𝒗𝒆𝒓𝒚 𝒇𝒂𝒔𝒕",
-        thumbnailUrl: img,
-        sourceUrl: '',
-        mediaType: 1,
-        renderLargerThumbnail: true
-    }
-});
+export default handler
+    

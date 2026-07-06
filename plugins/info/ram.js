@@ -13,10 +13,7 @@ const handler = async (m, { conn }) => {
     caption: txt,
     title: "𝐒𝐩𝐞𝐞𝐝 / 𝐓𝐞𝐬𝐭",
     body: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
-    newsletter: {
-      name: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
-      jid: ''
-    },
+    
     big: false,
     mentions: [m.sender]
   }, global.reply_status);

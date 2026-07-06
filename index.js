@@ -10,7 +10,7 @@ const client = new Client({
   fromMe: true, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [
   
-    { name: "Mero", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
+    { name: "Mero", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
     
   ],
   settings: { noWelcome: false },

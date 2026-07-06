@@ -1,48 +1,54 @@
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 
 const handler = async (m, { conn }) => {
-    // التأكد أن المستخدم عامل رد على رسالة
     if (!m.quoted) return m.reply("❌ يسطا لازم تعمل رد (Reply) على الصورة أو الفيديو اللي مبعوت مشاهدة مرة واحدة!");
 
-    // لقط نوع الرسالة المقتبسة
+    // لقط كائن الرسالة المقتبسة كاملة
     const q = m.quoted;
-    const isViewOnce = q.mtype === 'viewOnceMessageV2' || q.mtype === 'viewOnceMessage';
     
-    // استخراج الرسالة الحقيقية المستخبية جوه الـ viewOnce
-    const realMessage = q.message?.imageMessage || q.message?.videoMessage || q.imageMessage || q.videoMessage;
+    // فحص شامل وعميق لكل أشكال الـ View Once الممكنة في تحديثات الواتساب الجديدة
+    const msgContext = q.message?.viewOnceMessageV2?.message || 
+                       q.message?.viewOnceMessage?.message || 
+                       q.message?.ephemeralMessage?.message?.viewOnceMessageV2?.message ||
+                       q.message?.ephemeralMessage?.message?.viewOnceMessage?.message ||
+                       q.message;
 
-    if (!isViewOnce || !realMessage) {
+    // استخراج الرسالة الحقيقية للصورة أو الفيديو
+    const realMessage = msgContext?.imageMessage || msgContext?.videoMessage;
+
+    // فحص إضافي: هل الرسالة متعلمة كـ viewOnce داخلية؟
+    const isViewOnceFlag = msgContext?.imageMessage?.viewOnce || msgContext?.videoMessage?.viewOnce || 
+                            q.message?.viewOnceMessageV2 || q.message?.viewOnceMessage;
+
+    if (!realMessage || !isViewOnceFlag) {
         return m.reply("❌ الرسالة دي مش ميديا مشاهدة مرة واحدة أصلاً! منشن صورة أو فيديو مقفولين.");
     }
 
-    // ريأكت التحميل
     await conn.sendMessage(m.chat, { react: { text: "⚡", key: m.key } });
 
     try {
-        // تحديد نوع الميديا (صورة أو فيديو) لفك التشفير
-        const mediaType = q.message?.imageMessage || q.imageMessage ? 'image' : 'video';
+        // تحديد النوع بدقة
+        const mediaType = msgContext?.imageMessage ? 'image' : 'video';
         
-        // تحميل البافار (Stream Buffer) المباشر للميديا المشفرة من سيرفرات الواتساب
+        // تحميل وفك التشفير
         const stream = await downloadContentFromMessage(realMessage, mediaType);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
             buffer = Buffer.concat([buffer, chunk]);
         }
 
-        // إرسال الميديا بعد فك قفلها بنجاح في الشات
         if (mediaType === 'image') {
             await conn.sendMessage(m.chat, { 
                 image: buffer, 
-                caption: `🔓 *تم فك تشفير الصورة بنجاح بواسطة البوت!*` 
+                caption: `🔓 *تم اختراق وفك قفل الصورة بنجاح!*` 
             }, { quoted: m });
         } else if (mediaType === 'video') {
             await conn.sendMessage(m.chat, { 
                 video: buffer, 
-                caption: `🔓 *تم فك تشفير الفيديو بنجاح بواسطة البوت!*` 
+                caption: `🔓 *تم اختراق وفك قفل الفيديو بنجاح!*` 
             }, { quoted: m });
         }
 
-        // ريأكت النجاح
         await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
 
     } catch (e) {
@@ -55,6 +61,6 @@ const handler = async (m, { conn }) => {
 handler.usage = ["vv"];
 handler.category = "tools";
 handler.command = ["vv", "viewonce", "تحميل"];
-handler.group = false; // تعمل في الخاص والجروبات عادي
+handler.group = false;
 
 export default handler;

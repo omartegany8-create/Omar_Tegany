@@ -1,19 +1,54 @@
-export default async function before(m, { conn , bot }) {
+import fetch from "node-fetch"
+
+export default async function before(m, { conn }) {
   // الكلمات المفتاحية المطلوبة لتفعيل الرد
-  const triggers = ["بوت", "ed", "سكونا"];
+  const triggers = ["بوت", "me", "e"];
 
   if (triggers.includes(m.text?.trim())) {
     
-    // 💡 ضع رابط الفيديو المباشر الخاص بك هنا بين علامتي الاقتباس
-    const videoUrl = "https://www.image2url.com/r2/default/videos/1783357765467-230b3c21-8945-4126-acd7-b1cba3600e30.mp4"; 
+    // دالة عمل الريأكت السريع
+    const react = async (emoji) => {
+      try { await conn.sendMessage(m.chat, { react: { text: emoji, key: m.key } }) } catch {}
+    }
 
-    await conn.sendMessage(m.chat, {
-      video: { url: videoUrl },
-      mimetype: 'video/mp4',
-      ptv: true // هذه الخاصية تجعل الفيديو يظهر على شكل فيديو ملاحظات (دائري)
-    }, { quoted: m });
+    // 1. عمل ريأكت الانتظار طيران
+    await react('⏳');
+    
+    // رابط الفيديو المباشر الخاص بك
+    const videoUrl = "https://files.catbox.moe/mx4x02.mp4"; 
 
-    return true; 
+    try {
+      // جلب الفيديو
+      const res = await fetch(videoUrl);
+      const videoBuffer = await res.buffer();
+
+      // 2. إرسال الفيديو الدائري مع تمرير خصائص أبعاد البث لتخطي حظر السيرفرات
+      await conn.sendMessage(m.chat, {
+        video: videoBuffer,
+        mimetype: 'video/mp4',
+        ptv: true, // الخاصية السحرية للفيديو الدائري
+        seconds: 15, // بيعرف السيرفر إن المدة قصيرة عشان يوافق فوراً
+        gifPlayback: false
+      }, { 
+        quoted: m,
+        ephemeralExpiration: 86400 // تسريع المعالجة في الشات
+      });
+
+      // 3. عمل ريأكت الهيبة لما يوصل بنجاح
+      await react('⛩️');
+      return true;
+
+    } catch (e) {
+      console.error("❌ خطأ في إرسال الفيديو الدائري:", e);
+      // حل احتياطي سريع لو سيرفر الرفع علق نهائياً: إرساله كرابط ميديا مباشر
+      try {
+        await conn.sendMessage(m.chat, { video: { url: videoUrl }, mimetype: 'video/mp4', ptv: true }, { quoted: m });
+        await react('⛩️');
+        return true;
+      } catch (err) {
+        await react('❌');
+      }
+    }
   }
   
   return false;

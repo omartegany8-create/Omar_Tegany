@@ -170,7 +170,7 @@ async function M8_directForward(conn, m) {
 const handler = async (m, { conn }) => {
     if (!m.quoted) {
         await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
-        return m.reply('❌ يسطا لازم تعمل رد (Reply) على رسالة المشاهدة لمرة واحدة أولاً! 🔒');
+        return m.reply('❌ اعمل رد (Reply) على رسالة المشاهدة لمرة واحدة! 🔒');
     }
 
     const detection = detectViewOnce(m);
@@ -218,14 +218,14 @@ const handler = async (m, { conn }) => {
     if (!buf) {
         await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
         return m.reply(
-            '❌ فشلت كل الطرق الثمانية في فك التشفير!\n\n' +
+            '❌ فشلت كل الطرق في فك التشفير!\n\n' +
             '• الرسالة ممكن تكون قديمة وانتهت صلاحيتها من سيرفر الواتساب.\n\n' +
             '[Debug Info]:\n' + errors.map(e => `• ${e}`).join('\n')
         )
     }
 
     try {
-        const cap = '🔓 *تم اختراق وفك قفل الميديا بنجاح!*';
+        const cap = '*☁️𓆩𝑩𝑶𝑻𓆪🕸️⃟🕷️𓆩𝑴𝑬𝑹𝑶𓆪 🕯️*';
         
         if (media.type === 'image') {
             await conn.sendMessage(m.chat, { image: buf, caption: cap }, { quoted: m });
@@ -243,9 +243,9 @@ const handler = async (m, { conn }) => {
     }
 };
 
-handler.usage = ["vv"];
+handler.usage = ["v"];
 handler.category = "tools";
-handler.command = /^(كشف|فضح|vv|viewonce|vo|تحميل)$/i;
+handler.command = /^(كشف|فضح|v|viewonce|vo|تحميل)$/i;
 
 export default handler;
         

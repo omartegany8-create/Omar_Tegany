@@ -1,62 +1,20 @@
-import axios from 'axios';
+export default async function before(m, { conn , bot }) {
+  // الكلمات المفتاحية المطلوبة لتفعيل الرد
+  const triggers = ["بوت", "☠️", "لايت"];
 
-const handler = async (m, { conn }) => {
-    await conn.sendMessage(m.chat, { react: { text: "💀", key: m.key } });
+  if (triggers.includes(m.text?.trim())) {
+    
+    // 💡 ضع رابط الفيديو المباشر الخاص بك هنا بين علامتي الاقتباس
+    const videoUrl = "https://files.catbox.moe/bqxzcl.mp4"; 
 
-    // رابط فيديو مباشر وشغال
-    const videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
+    await conn.sendMessage(m.chat, {
+      video: { url: videoUrl },
+      mimetype: 'video/mp4',
+      ptv: true // هذه الخاصية تجعل الفيديو يظهر على شكل فيديو ملاحظات (دائري)
+    }, { quoted: m });
 
-    try {
-        // جلب الفيديو كـ Buffer متدفق مباشرة لتخطي حظر الاستضافة والـ Hosts
-        const response = await axios({
-            method: 'get',
-            url: videoUrl,
-            responseType: 'arraybuffer',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-
-        const videoBuffer = Buffer.from(response.data, 'binary');
-
-        // إرسال البافار المباشر
-        const sentMsg = await conn.sendMessage(m.chat, {
-            video: videoBuffer,
-            mimetype: 'video/mp4',
-            caption: `👑 ⇦ *مـلـك الـلـعـنـات: ريـومـن سـكـونـا ( SUKUNA )* 😈🔥\n\n\`\`\`───────────────────\`\`\`\n> 🎭 _"تنحوا جانباً.. فأنتم لا تعرفون مكانتكم الحقيقية."_\n\`\`\`───────────────────\`\`\``,
-        }, { quoted: m });
-
-        await conn.sendMessage(m.chat, { react: { text: "🔥", key: sentMsg.key } });
-
-    } catch (e) {
-        console.error(e);
-        
-        // الحل البديل الذكي والمضمون 100% لو الآي بي محظور تماماً من الرفع
-        try {
-            const fallbackMsg = await conn.sendMessage(m.chat, {
-                text: `👑 ⇦ *مـلـك الـلـعـنـات: ريـومـن سـكـونـا ( SUKUNA )* 😈🔥\n\n\`\`\`───────────────────\`\`\`\n> 🎭 _"تنحوا جانباً.. فأنتم لا تعرفون مكانتكم الحقيقية."_\n\`\`\`───────────────────\`\`\`\n\n🔗 *رابط مشاهدة وتحميل الإيديت مباشر:* ${videoUrl}`,
-                contextInfo: {
-                    externalAdReply: {
-                        title: "SUKUNA PREMIUM EDIT 🎥",
-                        body: "اضغط هنا للمشاهدة المباشرة السريعة",
-                        mediaType: 2,
-                        mediaUrl: videoUrl,
-                        sourceUrl: videoUrl,
-                        thumbnailUrl: "https://telegra.ph/file/p/sukuna.jpg" // تقدر تحط رابط صورة ثابتة لسكونا هنا لو تحب
-                    }
-                }
-            }, { quoted: m });
-            
-            await conn.sendMessage(m.chat, { react: { text: "🔗", key: fallbackMsg.key } });
-        } catch (err) {
-            await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
-            m.reply(`❌ الاستضافة عندك حظراها تماماً يسطا: ${e.message}`);
-        }
-    }
-};
-
-handler.usage = ["تست8"];
-handler.category = "example";
-handler.command = ["تست8", "سكونا", "sukuna"];
-
-export default handler;
+    return true; 
+  }
+  
+  return false;
+}

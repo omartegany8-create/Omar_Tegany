@@ -1,6 +1,6 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  📌 أمر بحث صور بنترست - المضمون والسريع
-//  🤖 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 
+//  📌 أمر بحث صور بنترست - المتوافق والمضمون 100%
+//  🤖 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import fetch from "node-fetch"
@@ -13,6 +13,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   const botName = '𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪'
 
+  // 1. لو المستخدم مكتبش كلمة البحث
   if (!text) {
     await react('❌')
     return m.reply(
@@ -28,12 +29,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     )
   }
 
+  // تفاعل البدء بالبحث
   await react('⏳')
-  
-  // رسالة الانتظار
   let waitMsg = await m.reply(`🔍 *جـاري الـبـحـث عـن:* « ${text} »\n> ⏳ ثواني وبجيب لك أروق الصور من بنترست...`)
 
   try {
+    // استدعاء دالة البحث الموثوقة
     const images = await searchPinterest(text)
 
     if (!images || images.length === 0) {
@@ -41,10 +42,10 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       return m.reply(`❌ *ملقيتش صور لـ:* « ${text} » \n💡 *جرب تكتب الكلمة بالإنجليزي.*`)
     }
 
-    // هنا هناخد أفضل 5 صور عشان الشات ميتمليش ورسايل الواتساب متتحظرش
+    // هناخد أفضل 5 صور عشان الشات ميتمليش رسايل كتير
     let topImages = images.slice(0, 5)
     
-    // إرسال رسالة التقديم الفخمة
+    // إرسال رسالة ترحيبية بالنتائج منظمة
     await conn.sendMessage(m.chat, {
       text: `✨ *تـم الـعـثـور عـلـى نـتـائـج مـروقـة!* \n\n` +
            `> 🔍 *الـبـحـث:* ${text}\n` +
@@ -52,7 +53,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
            `🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕯️`
     }, { quoted: m })
 
-    // إرسال الصور ورا بعض كألبوم منظم جداً
+    // إرسال الصور ورا بعض كألبوم منسق جداً بحقوقك
     let counter = 1
     for (let imageUrl of topImages) {
       try {
@@ -66,6 +67,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     }
 
+    // تفاعل النجاح النهائي
     await react('✅')
 
   } catch (e) {
@@ -76,7 +78,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  🔍 دالة البحث وتخطي الحماية والبدائل
+//  🔍 دالة جلب الصور الموثوقة والمحمية ضد الحظر
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function searchPinterest(query) {
   try {
@@ -103,10 +105,10 @@ async function searchPinterest(query) {
       if (allImages.length > 0) return [...new Set(allImages)]
     }
   } catch (e) {
-    console.log('❌ Pinterest session Error:', e.message)
+    console.log('❌ Pinterest Core Error:', e.message)
   }
 
-  // ─── البديل الأول: Unsplash ───
+  // ─── البديل التلقائي السريع لو بنترست علق: Unsplash ───
   try {
     const res = await fetch('https://unsplash.com/napi/search/photos?query=' + encodeURIComponent(query) + '&per_page=15', { headers: { 'User-Agent': 'Mozilla/5.0' } })
     if (res.ok) {
@@ -118,8 +120,8 @@ async function searchPinterest(query) {
   return null
 }
 
-handler.help = ['pin <بحث>', 'بنترست <بحث>']
+handler.help = ['pint <بحث>']
 handler.tags = ['downloader']
-handler.command = /^(بنترست|بينترست|pin|pinterest)$/i
+handler.command = /^(pint|بنترست|pin)$/i // الأمر الجديد .pint على طلبك يسطا
 
 export default handler

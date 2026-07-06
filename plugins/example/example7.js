@@ -1,11 +1,11 @@
 export default async function before(m, { conn , bot }) {
   // الكلمات المفتاحية المطلوبة لتفعيل الرد
-  const triggers = ["بوت", "☠️", "لايت"];
+  const triggers = ["بوت", "me", "sukuna"];
 
   if (triggers.includes(m.text?.trim())) {
     
     // 💡 ضع رابط الفيديو المباشر الخاص بك هنا بين علامتي الاقتباس
-    const videoUrl = "https://files.catbox.moe/bqxzcl.mp4"; 
+    const videoUrl = "https://files.catbox.moe/eterfm.mp4"; 
 
     await conn.sendMessage(m.chat, {
       video: { url: videoUrl },

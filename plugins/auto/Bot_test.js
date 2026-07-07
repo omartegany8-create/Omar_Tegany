@@ -5,7 +5,7 @@ export default async function before(m, { conn , bot }) {
   if (triggers.includes(m.text?.trim())) {
     
     // 💡 ضع رابط الفيديو المباشر الخاص بك هنا بين علامتي الاقتباس
-    const videoUrl = ""; 
+    const videoUrl = "https://files.catbox.moe/mx4x02.mp4"; 
 
     await conn.sendMessage(m.chat, {
       video: { url: videoUrl },

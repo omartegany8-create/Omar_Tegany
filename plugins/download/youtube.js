@@ -15,7 +15,7 @@ async function downloadFromSaveNow(url, quality) {
     `https://p.savenow.to/ajax/download.php?format=${format}&url=${encodeURIComponent(url)}&add_info=1`,
     {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         Referer: 'https://savenow.to/',
         Origin: 'https://savenow.to'
       },
@@ -41,7 +41,7 @@ async function downloadFromSaveNow(url, quality) {
     }
     if (progJson?.error) throw new Error(progJson?.error)
   }
-  if (!downloadUrl) throw new Error('انتهى وقت الانتظار، جرب لاحقاً')
+  if (!downloadUrl) throw new Error('انتهى وقت الانتظار')
   return downloadUrl
 }
 
@@ -52,7 +52,7 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     try { await conn.sendMessage(m.chat, { react: { text: emoji, key: m.key } }) } catch {}
   }
 
-  // ─── [النص الأول]: أمر التحميل الفعلي المخفي من الأزرار ──────────────────
+  // ─── [1] أمر التحميل الفعلي من الأزرار ──────────────────
   if (command === 'ytv-dl') {
     if (!args[0]) return
     const quality = args[0]
@@ -70,11 +70,11 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     try {
       const downloadUrl = await downloadFromSaveNow(url, quality)
       const dlRes = await fetch(downloadUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 120000 })
-      if (!dlRes.ok) throw new Error(`سيرفر التحميل لم يستجب`)
+      if (!dlRes.ok) throw new Error(`السيرفر لم يستجب`)
 
       await pipeline(dlRes.body, createWriteStream(outPath))
       const size = statSync(outPath).size
-      if (size < 1000) throw new Error('الملف تالف أو صغير جداً')
+      if (size < 1000) throw new Error('الملف تالف')
 
       if (isAudio) {
         await conn.sendMessage(m.chat, {
@@ -88,9 +88,9 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
           `*┃ —̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
           `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
           `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
-          `*『  ˹🎬˼  』 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐃𝐋*\n\n` +
-          `*↫ جودة الفيديو:* *${quality}p*\n` +
-          `*↫ المصدر:* *SaveNow السريع*\n\n` +
+          `*⸙【 ◈|🕸️|◈  】 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐃𝐋*\n\n` +
+          `*➸ الجودة:* *${quality}p*\n` +
+          `*➸ الحالة:* *تم السحب بنجاح*\n\n` +
           `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
           `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
         
@@ -99,60 +99,68 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
       react('✅')
     } catch (err) {
       react('❌')
-      m.reply(`❌ (*فـشـل الـتـحـمـيـل:* *${err.message}*)`)
+      m.reply(`❌ (*فـشـل الـتـحـمـيـل والـسـحـب*)`)
     } finally {
       try { unlinkSync(outPath) } catch {}
     }
     return
   }
 
-  // ─── [النص الثاني]: أمر البحث الأساسي وعرض الأزرار ──────────────────
+  // ─── [2] لو مفيش نص (واجهة المساعدة المزخرفة بالكامل) ──────────────────
   if (!text) {
-    react('🎬')
+    react('☁️')
     return m.reply(
       `*╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮*\n` +
       `*┃ —̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
       `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
       `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
-      `*⸙【 ◈|🕸️|◈  】 تـحـمـيـل الـيـوتـيـوب*\n\n` +
-      `*➤ يمكنك البحث وتحميل الفيديوهات بجميع الجودات*\n\n` +
+      `*𓆩  ✮⃝🕷️𓆪 الـيـوـتـيـوـب الـمـطـور*\n\n` +
+      `*『  ˹🎶˼  』 وصف الميزة:* \n` +
+      `*➤ يمكنك تحميل أي مقطع فيديو أو صوت من اليوتيوب*\n\n` +
       `*⤹ الاستخدام:* \n` +
-      `*${usedPrefix + command} <اسم الفيديو أو الرابط>*\n\n` +
-      `*💡 مثال:* \n` +
-      `*${usedPrefix + command} لوفي ضد كايدو كامل*\n\n` +
+      `*${usedPrefix + command} <اسم الفيديو / الرابط>*\n\n` +
+      `*➸ مثال:* \n` +
+      `*${usedPrefix + command} لوفي ضد كايدو*\n\n` +
       `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
       `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
     )
   }
 
+  // عمل ريأكت بالبحث فقط بدون إرسال رسائل مزعجة
   react('🔍')
-  await m.reply(`🔍 (*جـاري الـبـحـث عـن:* *${text}*)`)
 
   try {
     let video, url
     if (text.includes("youtube.com") || text.includes("youtu.be")) {
       const id = text.includes("v=") ? text.split("v=")[1].split("&")[0] : text.split("/").pop()
-      const search = await yts({ videoId: id })
-      if (!search) throw new Error("لم أجد الفيديو المطلق")
+      const search = await yts({ videoId: id }).catch(() => null)
+      if (!search) throw new Error()
       video = search
       url = text
     } else {
-      const search = await yts(text)
-      if (!search?.videos?.length) return m.reply("❌ (*لـم يـتـم الـعـثـور عـلـى نـتـائـج*)")
+      const search = await yts(text).catch(() => null)
+      if (!search?.videos?.length) {
+        react('❌')
+        return m.reply("❌ (*لـم يـتـم الـعـثـور عـلـى نـتـائـج*)")
+      }
       video = search.videos[0]
       url = video.url
     }
+
+    // تم العثور على الفيديو، نعمل ريأكت بنجاح علطول
+    react('✅')
 
     const caption = 
       `*╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮*\n` +
       `*┃ —̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
       `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
       `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
-      `*🎬 العنوان:* *${video.title}*\n` +
-      `*👤 القناة:* *${video.author?.name || 'Unknown'}*\n` +
-      `*⏱️ المدة:* *${video.timestamp}*\n` +
-      `*👁️ المشاهدات:* *${Number(video.views || 0).toLocaleString()}*\n\n` +
-      `*🎚️ اختار جودة التحميل من الأزرار بالأسفل:* \n` +
+      `*𓆩  ✮⃝🕷️𓆪 تـم الـعـثـور عـلـى الـفـيـدـيـو*\n\n` +
+      `*↫ العنوان:* *${video.title}*\n` +
+      `*↫ القناة:* *${video.author?.name || 'Unknown'}*\n` +
+      `*↫ المدة:* *${video.timestamp}*\n` +
+      `*↫ المشاهدات:* *${Number(video.views || 0).toLocaleString()}*\n\n` +
+      `*𝖬𝖤𝖱𝖮 𝖡𝖮𝖳 🛠️ حدد الجودة المراد تحميلها من الأسفل:* \n` +
       `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
       `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
 
@@ -173,7 +181,7 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
         message: {
           interactiveMessage: proto.Message.InteractiveMessage.create({
             body: proto.Message.InteractiveMessage.Body.create({ text: caption }),
-            footer: proto.Message.InteractiveMessage.Footer.create({ text: `𓆩 𝑴𝑬𝑹𝑶 𝑩𝑶𝑻 𓆪` }),
+            footer: proto.Message.InteractiveMessage.Footer.create({ text: `𓆩  𝑴𝑬𝑹𝑶 𝑩𝑶𝑻 𓆪  🕷️` }),
             header: proto.Message.InteractiveMessage.Header.create({
               hasMediaAttachment: !!(imgMsg?.imageMessage),
               imageMessage: imgMsg?.imageMessage || null
@@ -186,16 +194,15 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
 
     const msg = generateWAMessageFromContent(m.chat, message, { userJid: conn.user.jid })
     await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
-    react('✅')
+
   } catch (e) {
-    console.error('ytvideo:', e)
+    console.error('ytvideo Error:', e)
     react('❌')
     m.reply("❌ (*حـصـل خـطـأ أثـنـاء الـبـحـث*)")
   }
 }
 
-handler.help    = ['يوتيوب <اسم أو رابط>']
+handler.help    = ['يوتيوب']
 handler.tags    = ['downloader']
-handler.command = /^(يوتيوب|فيديو_يوتيوب|ytv-dl|ytv|sc-yt)$/i
+handler.command = /^(يوتيوب|فيديو_يوتيوب|ytv-dl|ytv|sc-yt|فيديو)$/i
 export default handler
-      

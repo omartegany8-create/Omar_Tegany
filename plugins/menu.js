@@ -1,8 +1,13 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  🕸️ قائمة أوامر بوت: 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪
+//  ⚡ تصميم منسق وفخم ومقاوم للأخطاء
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 const MENU_TIMEOUT = 120000;
 
 const CATEGORIES = [
     [1, 'التـحـمـيـل', 'downloads', '📂'],
-    [2, 'الـمـجـمـوعـات', 'group', '🐞'],
+    [2, 'الـمـجـمـوعـات', 'group', '🛡️'],
     [3, 'الـمـلـصـقـات', 'sticker', '🌄'],
     [4, 'الـمـطـوريـن', 'owner', '👑'],
     [5, 'امـثـلـه', 'example', '✳️'],
@@ -15,7 +20,7 @@ const CATEGORIES = [
     [12, 'الـذكـاء الاصـطـنـاعـي', 'ai', '🤖'],
     [13, 'الـبـوتـات الـفـرعـي', 'sub', '♥️'],
     [14, 'مـعـلومـات الـبـوت', 'info', '🗃️'],
-    [15, 'الـالــقــاب', 'nicknames', '🫯'],
+    [15, 'الـالــقــاب', 'nicknames', '🏷️'],
     [16, 'الـلـوجـوهــات', 'logos', '🎡'],
     [17, 'تـغـيـر الاصـوات', 'voices', '📢'],
     [18, 'أخــرى', 'other', '🌹']
@@ -43,12 +48,12 @@ const context = (jid, img) => ({
     forwardingScore: 1,
     forwardedNewsletterMessageInfo: {
         newsletterJid: '0029Vb8Q2Q56WaKx5Qk8QM2y@newsletter',
-        newsletterName: '𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
+        newsletterName: '𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️',
         serverMessageId: 0
     },
     externalAdReply: {
-        title: "𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
-        body: "✮⃝🕸️𝑴𝑬𝑹𝑶 𝑨𝑰✮⃝🕷️",
+        title: "𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️",
+        body: "✮⃝🕸️ 𝑴𝑬𝑹𝑶 𝑴𝑬𝑵𝑼 𝑳𝑰𝑺𝑻 🕸️⃝✮",
         thumbnailUrl: img,
         sourceUrl: 'https://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y',
         mediaType: 1,
@@ -69,18 +74,26 @@ const menu = async (m, { conn, bot }) => {
         cats[cat].push(c);
     });
 
-    const txt = `
-رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ
-وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِّلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَّحِيمٌ
-╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮
-${CATEGORIES.map(c => `┃ ⌯︙${c[0]} ~ *قـسـم ${c[1]} ${c[3]}*`).join('\n')}
-╰─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╯
-> *رد عـلـي الـرسـالـه بـ رقـم الـقـسـم فـقـط بـدون نـقـطـه*`;
+    // تنسيق واجهة القائمة الرئيسية بشكل فخم
+    let txt = `🕸️⃟🕷️ ═══ 𓆩 𝑴𝑬𝑹𝑶 𝑴𝑬𝑵𝑼 𓆪 ═══ 🕸️⃟🕷️\n\n`;
+    txt += `  ⚡ *مـرحـبـاً بك يـا حـب فـي قـائـمـة الأوامـر* ⚡\n`;
+    txt += `┌──────────────────────┐\n`;
+    
+    CATEGORIES.forEach(c => {
+        // حشو المسافات لجعل المنيو متناسق ومحاذاته مظبوطة
+        const num = c[0] < 10 ? `0${c[0]}` : c[0];
+        txt += `│ ⌯ [ ${num} ] ➥ *قـسـم ${c[1]}* ${c[3]}\n`;
+    });
+    
+    txt += `└──────────────────────┘\n\n`;
+    txt += `📌 *مـلـحوظـة:* رد على هذه الرسالة بـ **رقم القسم فقط** (بدون نقطة أو رموز) لفتح الأوامر الخاصة به.\n\n`;
+    txt += `⊱⋅ ─────────────── ⋅⊰\n`;
+    txt += `🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}`;
 
     const msg = await conn.sendMessage(m.chat, { 
         text: txt,
         contextInfo: context(m.sender, getImg(bot))
-    }, { quoted: reply_status });
+    }, { quoted: m }); // تم التعديل هنا لـ m لضمان الاستقرار
   
     global.menus[msg.key.id] = { cats, chatId: m.chat, time: Date.now() };
 };
@@ -93,38 +106,45 @@ menu.before = async (m, { conn, bot }) => {
     
     const cat = getCat(parseInt(m.text));
     if (!cat) {
-        await conn.sendMessage(m.chat, { text: '*❌≥ اختار رقم من القائمة بس*' }, { quoted: reply_status });
+        await conn.sendMessage(m.chat, { text: '❌ *يا حب، اختار رقم صح من القائمة المكتوبة فوق بس!*' }, { quoted: m });
         return true;
     }
     
     const cmds = menuData.cats[cat[2]];
     if (!cmds?.length) {
-        await conn.sendMessage(m.chat, { text: '*❌≥ القسم فاضي*' }, { quoted: reply_status });
+        await conn.sendMessage(m.chat, { text: '❌ *عذراً، هذا القسم فارغ حالياً!*' }, { quoted: m });
         return true;
     }
     
-    await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, id: m.quoted.id, fromMe: true } });
+    // حذف منيو الاختيارات القديم لمنع تشتيت الشات
+    try {
+        await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, id: m.quoted.id, fromMe: true } });
+    } catch {}
+    
     delete global.menus[m.quoted.id];
     
-    const cmdsList = cmds.map(c => `┃${cat[3]} /${c.usage.join(`\n┃${cat[3]} /`)}`).join('\n');
+    // تنسيق عرض الأوامر داخل القسم المختار بشكل احترافي
+    let cmdsList = '';
+    cmds.forEach(c => {
+        c.usage.forEach(u => {
+            cmdsList += `  🔹 *${bot.config.prefix || '.'}${u}*\n`;
+        });
+    });
+    
+    let resultTxt = `╔═════ 𓆩 ${cat[3]} قـسـم ${cat[1]} ${cat[3]} 𓆪 ═════╗\n\n`;
+    resultTxt += `${cmdsList}\n`;
+    resultTxt += `╚════════════════════════╝\n\n`;
+    resultTxt += `⊱⋅ ─────────────── ⋅⊰\n`;
+    resultTxt += `🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}`;
     
     await conn.sendMessage(m.chat, { 
-        text: `
-╭─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╮
-┃ *⌯︙ قـسـم ${cat[1]} ${cat[3]}*
-╰─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╯
-
-${cmdsList}
-
-╭─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╮
-┃ *⌯︙𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}*
-╰─┈─┈─┈─⟞${cat[3]}⟝─┈─┈─┈─╯
-> *رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا*`.trim(),
+        text: resultTxt,
         contextInfo: context(m.sender, getImg(bot))
-    }, { quoted: reply_status });
+    }, { quoted: m });
     
     return true;
 };
 
-menu.command = ['', 'القائمة', 'menu', ''];
+menu.command = ['اوامر', 'القائمة', 'menu'];
 export default menu;
+        

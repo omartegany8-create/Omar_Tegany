@@ -1,6 +1,6 @@
 export default async function before(m, { conn , bot }) {
   // الكلمات المفتاحية المطلوبة لتفعيل الرد
-  const triggers = ["بوت", "تستو", "لايت"];
+  const triggers = ["open", "e", "mero"];
 
   if (triggers.includes(m.text?.trim())) {
     

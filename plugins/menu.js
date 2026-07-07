@@ -1,9 +1,9 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  🕸️ قائمة أوامر بوت: 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪
-//  ⚡ تصميم منسق وفخم ومقاوم للأخطاء
+//  🕸️ منيو الأزرار التفاعلية المطور لـ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪
+//  🔘 بنظام الـ Native Flow Single Select List المضمون
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const MENU_TIMEOUT = 120000;
+import { proto, generateWAMessageFromContent } from "@whiskeysockets/baileys"
 
 const CATEGORIES = [
     [1, 'التـحـمـيـل', 'downloads', '📂'],
@@ -27,22 +27,15 @@ const CATEGORIES = [
 ];
 
 const getCat = n => CATEGORIES.find(c => c[0] === n);
-
-if (!global.menus) global.menus = {};
-
-const clean = () => {
-    const now = Date.now();
-    Object.keys(global.menus).forEach(k => {
-        if (now - global.menus[k].time > MENU_TIMEOUT) delete global.menus[k];
-    });
-};
+const getCatByKey = key => CATEGORIES.find(c => c[2] === key);
 
 const getImg = (bot) => {
     const { images } = bot.config.info;
     return Array.isArray(images) ? images[Math.floor(Math.random() * images.length)] : images;
 };
 
-const context = (jid, img) => ({
+// إعداد سياق الرسالة (الإعلان الفخم أسفل الرسالة)
+const getContext = (jid, img) => ({
     mentionedJid: [jid],
     isForwarded: true,
     forwardingScore: 1,
@@ -62,11 +55,11 @@ const context = (jid, img) => ({
 });
 
 const menu = async (m, { conn, bot }) => {
-    clean();
-    
+    // رياكشن الانتظار المروق
+    try { await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } }) } catch {}
+
     const cmds = await bot.getAllCommands();
     const cats = {};
-    
     cmds.forEach(c => {
         if (!c.usage?.length) return;
         const cat = c.category || 'other';
@@ -74,77 +67,110 @@ const menu = async (m, { conn, bot }) => {
         cats[cat].push(c);
     });
 
-    // تنسيق واجهة القائمة الرئيسية بشكل فخم
-    let txt = `🕸️⃟🕷️ ═══ 𓆩 𝑴𝑬𝑹𝑶 𝑴𝑬𝑵𝑼 𓆪 ═══ 🕸️⃟🕷️\n\n`;
-    txt += `  ⚡ *مـرحـبـاً بك يـا حـب فـي قـائـمـة الأوامـر* ⚡\n`;
-    txt += `┌──────────────────────┐\n`;
-    
-    CATEGORIES.forEach(c => {
-        // حشو المسافات لجعل المنيو متناسق ومحاذاته مظبوطة
-        const num = c[0] < 10 ? `0${c[0]}` : c[0];
-        txt += `│ ⌯ [ ${num} ] ➥ *قـسـم ${c[1]}* ${c[3]}\n`;
-    });
-    
-    txt += `└──────────────────────┘\n\n`;
-    txt += `📌 *مـلـحوظـة:* رد على هذه الرسالة بـ **رقم القسم فقط** (بدون نقطة أو رموز) لفتح الأوامر الخاصة به.\n\n`;
-    txt += `⊱⋅ ─────────────── ⋅⊰\n`;
-    txt += `🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}`;
+    // تجهيز أقسام المنيو كصفوف خيارات (Rows) داخل القائمة الزرار
+    const menuRows = CATEGORIES.map(c => ({
+        title: `قسم ${c[1]} ${c[3]}`,
+        id: `meromenu_cat_${c[2]}`,
+        description: `اضغط لعرض أوامر قسم الـ ${c[1]}`
+    }));
 
-    const msg = await conn.sendMessage(m.chat, { 
-        text: txt,
-        contextInfo: context(m.sender, getImg(bot))
-    }, { quoted: m }); // تم التعديل هنا لـ m لضمان الاستقرار
-  
-    global.menus[msg.key.id] = { cats, chatId: m.chat, time: Date.now() };
+    // إضافة أزرار الدعم الإضافية زي صورة صاحبك بالظبط
+    const extraRows = [
+        { title: "📢 القناة الرسمية", id: "meromenu_extra_channel", description: "تابع تحديثات البوت أول بأول" },
+        { title: "👑 مراسلة الـمـطـور مـيـرو", id: "meromenu_extra_owner", description: "للدعم الفني وتطوير البوت" }
+    ];
+
+    // بناء بارامترات أزرار الـ Native Flow
+    const buttonParamsJson = JSON.stringify({
+        title: "  𓆩 عرض الاقسام ♡ 𓆪  ",
+        sections: [
+            { title: "🕸️ قـائـمـة أقـسـام الـبـوت ⛈️", rows: menuRows },
+            { title: "✨ الـدّعـم والـتـواصـل ✨", rows: extraRows }
+        ]
+    });
+
+    const textPayload = `🕸️⃟🕷️ ═══ 𓆩 𝑴𝑬𝑹𝑶 𝑴𝑬𝑵𝑼 𓆪 ═══ 🕸️⃟🕷️\n\n  ⚡ *مـرحـبـاً بك يـا حـب فـي قـائـمـة الأوامـر* ⚡\n\nاضغط على الزر بالأسفل لفتح قائمة الأقسام الرئيسية مباشرة واختر ما يناسبك.\n\n⊱⋅ ─────────────── ⋅⊰\n🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪`;
+
+    // إنشاء رسالة الأزرار التفاعلية المتطورة
+    const menuMessage = generateWAMessageFromContent(m.chat, {
+        viewOnceMessage: {
+            message: {
+                interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+                    body: proto.Message.InteractiveMessage.Body.create({ text: textPayload }),
+                    contextInfo: getContext(m.sender, getImg(bot)),
+                    nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.fromObject({
+                        buttons: [{
+                            name: "single_select",
+                            buttonParamsJson: buttonParamsJson
+                        }]
+                    })
+                })
+            }
+        }
+    }, { quoted: m });
+
+    await conn.relayMessage(m.chat, menuMessage.message, { messageId: menuMessage.key.id });
+    try { await conn.sendMessage(m.chat, { react: { text: '✨', key: m.key } }) } catch {}
 };
 
+// الاستماع لضغطات الأزرار وعرض الأوامر تلقائياً
 menu.before = async (m, { conn, bot }) => {
-    clean();
-    
-    const menuData = global.menus[m.quoted?.id];
-    if (!menuData) return false;
-    
-    const cat = getCat(parseInt(m.text));
-    if (!cat) {
-        await conn.sendMessage(m.chat, { text: '❌ *يا حب، اختار رقم صح من القائمة المكتوبة فوق بس!*' }, { quoted: m });
-        return true;
-    }
-    
-    const cmds = menuData.cats[cat[2]];
-    if (!cmds?.length) {
-        await conn.sendMessage(m.chat, { text: '❌ *عذراً، هذا القسم فارغ حالياً!*' }, { quoted: m });
-        return true;
-    }
-    
-    // حذف منيو الاختيارات القديم لمنع تشتيت الشات
-    try {
-        await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, id: m.quoted.id, fromMe: true } });
-    } catch {}
-    
-    delete global.menus[m.quoted.id];
-    
-    // تنسيق عرض الأوامر داخل القسم المختار بشكل احترافي
-    let cmdsList = '';
+    if (!m.text || !m.text.startsWith('meromenu_')) return false;
+
+    const cmds = await bot.getAllCommands();
+    const cats = {};
     cmds.forEach(c => {
+        if (!c.usage?.length) return;
+        const cat = c.category || 'other';
+        if (!cats[cat]) cats[cat] = [];
+        cats[cat].push(c);
+    });
+
+    // 1. لو تم الضغط على زر القناة
+    if (m.text === 'meromenu_extra_channel') {
+        await m.reply(`📌 تفضل يا حب رابط قناتنا الرسمية تابعنا هنا:\nhttps://whatsapp.com/channel/0029Vb8Q2Q56WaKx5Qk8QM2y`);
+        return true;
+    }
+
+    // 2. لو تم الضغط على زر مراسلة المطور
+    if (m.text === 'meromenu_extra_owner') {
+        await m.reply(`👑 للتواصل مع مطور البوت [ ميرو ] مباشرة:\nwa.me/201017631165`); // ضع رقمك هنا يا حب
+        return true;
+    }
+
+    // 3. معالجة فتح قسم الأوامر المختار
+    const catKey = m.text.replace('meromenu_cat_', '');
+    const cat = getCatByKey(catKey);
+    
+    if (!cat) return false;
+
+    const selectedCmds = cats[catKey];
+    if (!selectedCmds?.length) {
+        await m.reply('❌ *عذراً، هذا القسم فارغ حالياً!*');
+        return true;
+    }
+
+    let cmdsList = '';
+    selectedCmds.forEach(c => {
         c.usage.forEach(u => {
             cmdsList += `  🔹 *${bot.config.prefix || '.'}${u}*\n`;
         });
     });
-    
+
     let resultTxt = `╔═════ 𓆩 ${cat[3]} قـسـم ${cat[1]} ${cat[3]} 𓆪 ═════╗\n\n`;
     resultTxt += `${cmdsList}\n`;
     resultTxt += `╚════════════════════════╝\n\n`;
     resultTxt += `⊱⋅ ─────────────── ⋅⊰\n`;
     resultTxt += `🕯️ 𓆩 𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 ~ ${bot.config.info.nameBot || 'Bot'}`;
-    
+
     await conn.sendMessage(m.chat, { 
         text: resultTxt,
-        contextInfo: context(m.sender, getImg(bot))
+        contextInfo: getContext(m.sender, getImg(bot))
     }, { quoted: m });
-    
+
     return true;
 };
 
 menu.command = ['اوامر', 'القائمة', 'menu'];
 export default menu;
-        
+    

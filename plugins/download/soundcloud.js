@@ -12,7 +12,7 @@ let CLIENT_IDS = [
 ]
 
 let lastRequestTime = 0
-const MIN_DELAY = 3000 // 3 ثواني تأخير لحماية السيرفر
+const MIN_DELAY = 3000
 
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -33,7 +33,7 @@ async function waitForRateLimit() {
 async function searchSoundCloud(query) {
   const clientIds = await getClientIds()
   const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Accept': 'application/json',
     'Origin': 'https://soundcloud.com',
     'Referer': 'https://soundcloud.com/'
@@ -44,14 +44,10 @@ async function searchSoundCloud(query) {
       await waitForRateLimit()
       const url = `https://api-v2.soundcloud.com/search?q=${encodeURIComponent(query)}&client_id=${cid}&limit=5`
       const res = await fetch(url, { headers })
-      if (res.status === 429) {
-        await delay(5000)
-        continue
-      }
+      if (res.status === 429) { await delay(5000); continue }
       if (!res.ok) continue
       const data = await res.json()
-      const tracks = data?.collection?.filter(item => item.kind === 'track') || []
-      if (tracks.length > 0) return tracks
+      return data?.collection?.filter(item => item.kind === 'track') || []
     } catch (err) {
       console.log(`خطأ في البحث: ${err.message}`)
     }
@@ -72,7 +68,7 @@ async function method1_API(trackUrl, trackData) {
       if (!track?.media?.transcodings?.length) {
         const resolveUrl = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(trackUrl)}&client_id=${cid}`
         const res = await fetch(resolveUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Accept': 'application/json' }
+          headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
         })
         if (res.status === 429) { await delay(3000); continue }
         if (res.ok) track = await res.json()
@@ -108,7 +104,7 @@ async function method1_API(trackUrl, trackData) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  🎮 Handler (الزخرفة الكبيرة والنظيفة)
+//  🎮 Handler (الزخرفة الفخمة والروقان)
 // ═══════════════════════════════════════════════════════
 let handler = async (m, { conn, text, usedPrefix, command }) => {
 
@@ -119,18 +115,22 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   // ─── 1️⃣ تحميل مباشر من رابط ────────────────────
   if (text && text.includes('soundcloud.com')) {
     react('⏳')
-    await m.reply('⏳ **جاري معالجة الرابط وتحميل الأغنية...**')
+    await m.reply('⏳ (*جـاري تـحـمـيـل الـرابـط*)')
 
     try {
       const result = await downloadSoundCloud(text.trim())
 
       const caption = 
-        `🎵 *S O U N D C L O U D*\n` +
-        `─── · · · 🎧 · · · ───\n\n` +
-        `📝 *اسم المقطع:* **${result.title}**\n` +
-        `💿 *الجودة:* **${result.quality}**\n` +
-        `🚀 *المصدر:* **${result.method}**\n\n` +
-        `─── · · · ✨ · · · ───`
+        `*╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮*\n` +
+        `*┃ —̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
+        `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
+        `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+        `*『   ˹🎶˼  』 𝐒𝐎𝐔𝐍𝐃𝐂𝐋𝐎𝐔𝐃*\n\n` +
+        `*↫ المقطع:* *${result.title}*\n` +
+        `*↫ الجودة:* *${result.quality}*\n` +
+        `*↫ المصدر:* *${result.method}*\n\n` +
+        `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+        `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
 
       if (result.thumb) {
         try {
@@ -154,65 +154,64 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       react('✅')
     } catch (e) {
       react('❌')
-      let errorMsg = e.message
-      if (errorMsg.includes('rate') || errorMsg.includes('429')) {
-        errorMsg = 'الخدمة مشغولة حالياً، حاول بعد دقائق'
-      }
-      m.reply('❌ **فشل التحميل:** ' + `**${errorMsg}**`)
+      m.reply('❌ (*فـشـل الـتـحـمـيـل*)')
     }
     return
   }
 
-  // ─── 2️⃣ لو مفيش نص (رسالة المساعدة المحترفة) ───────────────────────
+  // ─── 2️⃣ لو مفيش نص (قائمة المساعدة) ───────────────────────
   if (!text) {
     react('🎵')
     return m.reply(
-      `🎵 *S O U N D C L O U D*\n` +
-      `─── · · · 🔍 · · · ───\n\n` +
-      `📥 **يمكنك البحث وتحميل الأغاني والمقاطع الصوتية بكل سهولة**\n\n` +
-      `📌 *الاستخدام:* \n` +
-      `**${usedPrefix + command} <اسم الأغنية أو الرابط>**\n\n` +
-      `💡 *مثال:* \n` +
-      `**${usedPrefix + command} سورة البقرة ماهر المعيقلي**\n\n` +
-      `─── · · · ✨ · · · ───`
+      `*╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮*\n` +
+      `*┃ —̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
+      `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
+      `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+      `*⸙【 ◈|🕸️|◈  】 الـتـحـمـيـل الـصـوتـي*\n\n` +
+      `*➤ ابحث وحمل الأغاني والمقاطع بكل سهولة*\n\n` +
+      `*⤹ الاستخدام:* \n` +
+      `*${usedPrefix + command} <اسم الأغنية أو الرابط>*\n\n` +
+      `*💡 مثال:* \n` +
+      `*${usedPrefix + command} تامر عاشور*\n\n` +
+      `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+      `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
     )
   }
 
   // ─── 3️⃣ بحث + تحميل أول نتيجة ────────────
   react('🔍')
-  await m.reply(`🔍 **جاري البحث عن:** **${text}**...`)
+  await m.reply(`🔍 (*جـاري الـبـحـث عـن:* *${text}*)`)
 
   try {
     const tracks = await searchSoundCloud(text)
 
     if (!tracks.length) {
       react('❌')
-      return m.reply(`❌ **عذراً، لم أجد أي نتائج للبحث عن:** **${text}**`)
+      return m.reply(`❌ (*لـم يـتـم الـعـثـور عـلـى نـتـائـج*)`)
     }
 
     const track = tracks[0]
     const artistName = track.user?.full_name || track.user?.username || 'Unknown'
 
-    await m.reply(
-      `✨ **تم العثور على الأغنية!**\n\n` +
-      `🎵 *المقطع:* **${track.title}**\n` +
-      `👤 *الفنان:* **${artistName}**\n\n` +
-      `⏳ **جاري السحب والتحميل الآن...**`
-    )
+    await m.reply(`✨ (*تـم الـعـثـور! جـاري الـسـحـب الآن...*)`)
 
     const result = await downloadSoundCloud(track.permalink_url, track)
     const artUrl = track.artwork_url ? track.artwork_url.replace('large', 't500x500') : null
 
     const caption = 
-      `🎵 *S O U N D C L O U D*\n` +
-      `─── · · · 🎧 · · · ───\n\n` +
-      `🎶 *العنوان:* **${track.title}**\n` +
-      `👤 *المغني:* **${artistName}**\n` +
-      `⏱️ *المدة:* **${formatDuration(track.duration)}**\n` +
-      `👁️ *المشاهدات:* **${formatNum(track.playback_count)}**\n` +
-      `❤️ *التفاعلات:* **${formatNum(track.likes_count)}**\n` +
-      `🚀 *الطريقة:* **${result.method}**\n\n` +
-      `─── · · · ✨ · · · ───`
+      `*╭─┈─┈─┈─⟞🕸️⟝─┈─┈─┈─╮*\n` +
+      `*┃—̳͟͞͞☁️ 𓆩𝑴𝑬𝑹𝑶𓆪 🕸️⃟⁦🕷️ 𓆩𝑩𝑶𝑻𓆪〈*\n` +
+      `*╰─┈─┈─┈─⟞🕷️⟝─┈─┈─┈─╯*\n\n` +
+      `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+      `*『   ˹🎶˼  』 𝐒𝐎𝐔𝐍𝐃𝐂𝐋𝐎𝐔𝐃*\n\n` +
+      `*↫ العنوان:* *${track.title}*\n` +
+      `*↫ المغني:* *${artistName}*\n` +
+      `*↫ المدة:* *${formatDuration(track.duration)}*\n` +
+      `*↫ المشاهدات:* *${formatNum(track.playback_count)}*\n` +
+      `*↫ التفاعلات:* *${formatNum(track.likes_count)}*\n` +
+      `*↫ الطريقة:* *${result.method}*\n\n` +
+      `*❉═━═━═━ ◦ • ⊰🕷️ • ◦ ━═━═━═❉*\n` +
+      `*𓆩  𝑴𝑬𝑹𝑶 𝑨𝑰 𓆪 🕷️*`
 
     if (artUrl) {
       try {
@@ -238,11 +237,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   } catch (e) {
     console.error('SoundCloud Error:', e)
     react('❌')
-    let errorMsg = e.message
-    if (errorMsg.includes('rate') || errorMsg.includes('429')) {
-      errorMsg = 'الخدمة مشغولة حالياً بكثرة الطلبات، انتظر قليلاً'
-    }
-    m.reply('❌ **فشل التحميل:** ' + `**${errorMsg}**`)
+    m.reply(`❌ (*فـشـل الـتـحـمـيـل والـسـحـب*)`)
   }
 }
 
@@ -319,7 +314,7 @@ async function downloadSoundCloud(trackUrl, trackData = null) {
       console.log(`طريقة فشلت: ${err.message}`)
     }
   }
-  throw new Error('فشلت جميع طرق التحميل المتوفرة')
+  throw new Error('فشلت جميع الطرق')
 }
 
 // ═══════════════════════════════════════════════════════
@@ -330,4 +325,4 @@ handler.tags = ['downloader']
 handler.command = /^(soundcloud|ساوند|اغنيه|اغنية|sc)$/i
 
 export default handler
-      
+        

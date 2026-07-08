@@ -10,11 +10,12 @@ const voices = {
 const voiceNames   = { male: "ذكري 🔵", female: "أنثوي 🔴", robotic: "روبوتي 🤖" }
 const dialectNames = { fusha: "الفصحى", khaliji: "الخليجية", masri: "المصرية", shami: "الشامية", english: "English" }
 
-// ذاكرة حفظ الجلسات للجروب/الشات
+// ذاكرة الجلسات العامة عشان تسمع في الدالتين
 global.voice_sessions = global.voice_sessions || {}
 
 const VOICE_IMAGE = "https://wallpapercave.com/wp/wp10502415.jpg"
 
+// ━━━ [1] الأمر الأساسي لبدء الميزة ━━━
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   const chat = m.chat
   const input = text?.trim()
@@ -23,8 +24,64 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     try { await conn.sendMessage(m.chat, { react: { text: emoji, key: m.key } }) } catch {}
   }
 
-  // 1️⃣ لو العضو في الخطوة الأولى واختار نوع الصوت (رقم 1 أو 2 أو 3)
-  if (global.voice_sessions[chat] && global.voice_sessions[chat].step === 1 && /^[1-3]$/.test(input)) {
+  if (!input) {
+    react('🎙️')
+    const helpMsg = 
+      `*╔═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╗*\n` +
+      `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
+      `*╚═━═━═━ ◦ • ⊰🕸️⊱ • ◦ ━═━═━═╝*\n\n` +
+      `> *【🎙️】تحويل الـنـص إلـى صـوت 🔊*\n\n` +
+      `> *【🕯️】اكتب الجملة المراد نطقها ✨*\n\n` +
+      `*📌 مثال:* \n` +
+      `*${usedPrefix + command} هلا والله يا عمر*\n\n` +
+      `*╔═━═━═━ ◦ • ⊰🕷️⊱ • ◦ ━═━═━═╗*\n` +
+      `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
+      `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
+    
+    return conn.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: helpMsg }, { quoted: m })
+  }
+
+  // فتح الجلسة وحفظ النص
+  global.voice_sessions[chat] = { step: 1, speechText: input, sender: m.sender }
+  react('🔍')
+
+  const step1Msg = 
+    `*╔═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╗*\n` +
+    `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
+    `*╚═━═━═━ ◦ • ⊰🕸️⊱ • ◦ ━═━═━═╝*\n\n` +
+    `> *【🎙️】خـطـوة 1: اخـتـر نـوع الـصـوت 🔊*\n\n` +
+    `*1️⃣  صـوت ذكـري (رجل)*\n` +
+    `*2️⃣  صـوت أنـثـوي (فتاة)*\n` +
+    `*3️⃣  صـوت روـبـوتـي (آلي)*\n\n` +
+    `> *【🕯️】اكتب رقم الاختيار في الشات الآن ✨*\n\n` +
+    `*╔═━═━═━ ◦ • ⊰🕷️⊱ • ◦ ━═━═━═╗*\n` +
+    `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
+    `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
+
+  await conn.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: step1Msg }, { quoted: m })
+  react('✅')
+}
+
+handler.command = /^(احكي|voice|تكلم)$/i
+handler.help    = ['احكي <نص>']
+handler.tags    = ['ai']
+
+// ━━━ [2] دالة المراقبة المستمرة لالتقاط الأرقام ━━━
+handler.all = async function (m) {
+  const chat = m.chat
+  // التأكد إن فيه جلسة مفتوحة للشات ده، وإن العضو بعت نص، ومش بادئ بنقطة أمر
+  if (!global.voice_sessions[chat]) return
+  if (!m.text) return
+  if (m.text.startsWith('.') || m.text.startsWith('/')) return
+
+  const input = m.text.trim()
+  
+  const react = async (emoji) => {
+    try { await this.sendMessage(chat, { react: { text: emoji, key: m.key } }) } catch {}
+  }
+
+  // الخطوة 1: اختيار الصوت
+  if (global.voice_sessions[chat].step === 1 && /^[1-3]$/.test(input)) {
     const voiceMap = { '1': 'male', '2': 'female', '3': 'robotic' }
     const voice = voiceMap[input]
     
@@ -48,21 +105,21 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
       `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
 
-    await conn.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: step2Msg }, { quoted: m })
+    await this.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: step2Msg }, { quoted: m })
     react('✅')
     return
   }
 
-  // 2️⃣ لو العضو في الخطوة الثانية واختار اللهجة (رقم من 1 لـ 5)
-  if (global.voice_sessions[chat] && global.voice_sessions[chat].step === 2 && /^[1-5]$/.test(input)) {
+  // الخطوة 2: اختيار اللهجة والتوليد
+  if (global.voice_sessions[chat].step === 2 && /^[1-5]$/.test(input)) {
     const dialectMap = { '1': 'fusha', '2': 'khaliji', '3': 'masri', '4': 'shami', '5': 'english' }
     const dialect = dialectMap[input]
     
     const { speechText, voice } = global.voice_sessions[chat]
-    delete global.voice_sessions[chat] // إنهاء الجلسة فوراً لمنع التعليق
+    delete global.voice_sessions[chat] // تنظيف فوراً
 
     react('⏳')
-    await m.reply(`⏳ (*جـاري تـولـيـد الـصـوت الآن...*)`)
+    await this.sendMessage(chat, { text: `⏳ (*جـاري تـولـيـد الـصـوت الآن...*)` }, { quoted: m })
 
     try {
       const resp = await axios.post(
@@ -92,8 +149,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
         `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
 
-      await conn.sendMessage(chat, { text: finalMsg }, { quoted: m })
-      await conn.sendMessage(chat, {
+      await this.sendMessage(chat, { text: finalMsg }, { quoted: m })
+      await this.sendMessage(chat, {
         audio: audioBuffer,
         mimetype: "audio/mpeg",
         fileName: "mero_voice.mp3",
@@ -104,53 +161,11 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     } catch (e) {
       console.error(e)
       react('❌')
-      m.reply(`❌ (*فـشـل تـولـيـد الـصـوت، تـأكـد مـن صـلاحـيـة الـمـفـتـاح*)`)
+      this.sendMessage(chat, { text: `❌ (*فـشـل تـولـيـد الـصـوت، تـأكـد مـن الـمـفـتـاح*)` }, { quoted: m })
     }
     return
   }
-
-  // 3️⃣ البداية: لو العضو كتب الأمر بدون نص
-  if (!input) {
-    react('🎙️')
-    const helpMsg = 
-      `*╔═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╗*\n` +
-      `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
-      `*╚═━═━═━ ◦ • ⊰🕸️⊱ • ◦ ━═━═━═╝*\n\n` +
-      `> *【🎙️】تحويل الـنـص إلـى صـوت 🔊*\n\n` +
-      `> *【🕯️】اكتب الجملة المراد نطقها ✨*\n\n` +
-      `*📌 مثال:* \n` +
-      `*${usedPrefix + command} هلا والله يا عمر*\n\n` +
-      `*╔═━═━═━ ◦ • ⊰🕷️⊱ • ◦ ━═━═━═╗*\n` +
-      `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
-      `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
-    
-    return conn.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: helpMsg }, { quoted: m })
-  }
-
-  // 4️⃣ بدء الجلسة لأول مرة عند كتابة النص
-  global.voice_sessions[chat] = { step: 1, speechText: input, sender: m.sender }
-  react('🔍')
-
-  const step1Msg = 
-    `*╔═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╗*\n` +
-    `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
-    `*╚═━═━═━ ◦ • ⊰🕸️⊱ • ◦ ━═━═━═╝*\n\n` +
-    `> *【🎙️】خـطـوة 1: اخـتـر نـوع الـصـوت 🔊*\n\n` +
-    `*1️⃣  صـوت ذكـري (رجل)*\n` +
-    `*2️⃣  صـوت أنـثـوي (فتاة)*\n` +
-    `*3️⃣  صـوت روـبـوتـي (آلي)*\n\n` +
-    `> *【🕯️】اكتب رقم الاختيار في الشات بدون نقطة ✨*\n\n` +
-    `*╔═━═━═━ ◦ • ⊰🕷️⊱ • ◦ ━═━═━═╗*\n` +
-    `*┃ —̳͟͞͞☁️ 𓆩𝐌𝐄𝐑𝐎𓆪 🕸️⃟🕷️ 𓆩𝐁𝐎𝐓𓆪〈*\n` +
-    `*╚═━═━═━ ◦ • ⊰🎙️⊱ • ◦ ━═━═━═╝*`
-
-  await conn.sendMessage(chat, { image: { url: VOICE_IMAGE }, caption: step1Msg }, { quoted: m })
-  react('✅')
 }
 
-handler.command = /^(احكي|voice|تكلم)$/i
-handler.help    = ['احكي <نص>']
-handler.tags    = ['ai']
-
 export default handler
-                                
+                                  

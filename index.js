@@ -5,12 +5,12 @@ import sub from './sub.js';
 
 /* =========== Client ========== */
 const client = new Client({
-  phoneNumber: '201158601817', // رقم البوت بدون مسافات
+  phoneNumber: '201031044377', // رقم البوت بدون مسافات
   prefix: [".", "/", "!"],
   fromMe: true, // 🌟 تم التعديل لـ true عشان البوت يرد على رسايلك ويسمع كلامك أنت كمان
   owners: [
   
-    { name: "Mero", lid: "201158601817@lid", jid: "201158601817@s.whatsapp.net" },
+    { name: "Mero", lid: "201031044377@lid", jid: "201031044377@s.whatsapp.net" },
     
   ],
   settings: { noWelcome: false },

@@ -2,7 +2,7 @@
 //  🎬 أمر اديت - بحث عن اديتات شخصيات من تيك توك
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import fetch from "node-fetch"
+import axios from "axios"
 import {
   proto,
   generateWAMessageFromContent,
@@ -76,21 +76,23 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  🔍 دالة البحث في تيك توك
+//  🔍 دالة البحث في تيك توك (باستخدام Axios المضمونة)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function searchTikTok(query) {
   try {
-    const res = await fetch("https://www.tikwm.com/api/feed/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        Accept: "application/json",
-      },
-      body: `keywords=${encodeURIComponent(query)}&count=10&cursor=0&HD=1`,
-    })
-    const json = await res.json()
-
+    const res = await axios.post(
+      "https://www.tikwm.com/api/feed/search",
+      `keywords=${encodeURIComponent(query)}&count=10&cursor=0&HD=1`,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          Accept: "application/json",
+        }
+      }
+    )
+    
+    const json = res.data
     if (json.code === 0 && json.data?.videos?.length) {
       return json.data.videos.map((v) => ({
         title: v.title || "اديت 🎬",
@@ -208,4 +210,3 @@ handler.tags = ["downloader"]
 handler.command = /^(اديت|edit|اديتات|edits)$/i
 
 export default handler
-      

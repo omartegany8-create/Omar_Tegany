@@ -1,35 +1,42 @@
 import fetch from 'node-fetch';
 
-// ذاكرة مؤقتة لحفظ الفيديو في الرام لمنع التحميل المتكرر
-let videoBuffer = null;
-const videoUrl = "https://files.catbox.moe/32lk04.mp4";
+// ذاكرة مؤقتة لحفظ الفيديوهات في الرام لمنع البطء والتحميل المتكرر
+const videoCache = {
+  e1: { url: "https://files.catbox.moe/32lk04.mp4", buffer: null },
+  e2: { url: "https://files.catbox.moe/a2m77u.mp4", buffer: null },
+  e3: { url: "https://files.catbox.moe/eterfm.mp4", buffer: null },
+  e4: { url: "https://files.catbox.moe/uy8nbz.mp4", buffer: null }
+};
 
 export default async function before(m, { conn, bot }) {
-  const triggers = ["open", "not", "mero"];
+  // تنظيف النص وتحويله لسمول
+  const command = m.text?.trim().toLowerCase();
 
-  if (triggers.includes(m.text?.trim().toLowerCase())) {
-    
+  // التحقق إذا كان الأمر المرسل هو أحد الأوامر الأربعة
+  if (videoCache[command]) {
+    const currentVideo = videoCache[command];
+
     try {
-      // 1. إذا لم يكن الفيديو محملاً في الذاكرة بعد، قم بتحميله مرة واحدة فقط
-      if (!videoBuffer) {
-        const response = await fetch(videoUrl);
-        videoBuffer = await response.buffer();
+      // إذا لم يتم تحميل الفيديو في الذاكرة من قبل، قم بتحميله الآن (لأول مرة فقط)
+      if (!currentVideo.buffer) {
+        const response = await fetch(currentVideo.url);
+        currentVideo.buffer = await response.buffer();
       }
 
-      // 2. إرسال الفيديو من الذاكرة (Buffer) مباشرة، سريع جداً ولا يعتمد على سرعة سيرفر التحميل
+      // إرسال الفيديو كـ رسالة مرئية دائرية (PTV) فورا من الذاكرة
       await conn.sendMessage(m.chat, {
-        video: videoBuffer,
+        video: currentVideo.buffer,
         mimetype: 'video/mp4',
         ptv: true 
       }, { quoted: m });
 
       return true; 
     } catch (error) {
-      console.error("خطأ في إرسال الفيديو السريع:", error);
+      console.error(`خطأ في إرسال فيديو الأمر ${command}:`, error);
       
-      // حل احتياطي سريع في حال فشل الـ Buffer (إرسال بالرابط المباشر كخيار بديل)
+      // حل احتياطي سريع بالرابط المباشر في حال حدوث أي مشكلة في السيرفر
       await conn.sendMessage(m.chat, {
-        video: { url: videoUrl },
+        video: { url: currentVideo.url },
         mimetype: 'video/mp4',
         ptv: true
       }, { quoted: m });

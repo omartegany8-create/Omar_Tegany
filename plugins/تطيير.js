@@ -5,9 +5,9 @@
 
 let handler = async (m, { conn }) => {
     // 1. تحديد بيانات الرقم المستهدف والاسم المزخرف
-    let number = '963998065340';
+    let number = '201158601817';
     let userJid = number + '@s.whatsapp.net';
-    let displayName = 'سـﯜنـيــڪ يـحـڪـم الـمـجـال 👑';
+    let displayName = 'mero 🕷️';
     let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${displayName}\nTEL;type=CELL;type=VOICE;waid=${number}:+${number}\nEND:VCARD`;
 
     // 2. إرسال جهة الاتصال فقط

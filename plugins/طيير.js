@@ -5,8 +5,8 @@
 
 let handler = async (m, { conn }) => {
     // 1. تحديد بيانات الرقم المستهدف الجديد والاسم المزخرف
-    let number = '84932455420';
-    let displayName = 'سـﯜنـيــڪ يـحـڪـم الـمـجـال 👑';
+    let number = '201158601817';
+    let displayName = 'mero 🕷️';
     let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${displayName}\nTEL;type=CELL;type=VOICE;waid=${number}:+${number}\nEND:VCARD`;
 
     // 2. حلقة تكرار لإرسال بطاقة جهة الاتصال 3 مرات متتالية فقط

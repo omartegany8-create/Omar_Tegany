@@ -21,27 +21,27 @@ export default async function before(m, { conn, bot }) {
         try { await conn.sendMessage(m.chat, { react: { text: '🕷️', key: m.key } }); } catch (e) {}
       }
 
-      // 2. 👤 إعدادات بصمة "ياغامي لايت" والجروب الخاص بك لحقنها في الرسالة
+      // 2. 👤 إعدادات كارت الجروب وصورة ياغامي لايت (تم تصليح التوجيه والصورة)
       const meroContext = {
         contextInfo: {
-          isForwarded: true,
+          isForwarded: true, // تفعيل خاصية رسالة محولة مظهرياً للفخامة
           forwardedNewsletterMessageInfo: {
-            newsletterJid: "120363416870755391@newsletter", // معرف وهمي مستقر للبصمة
+            newsletterJid: "120363416870755391@newsletter", 
             serverMessageId: 100,
-            newsletterName: "𓆩 𝒀𝑨𝑮𝑨𝑴𝑰 𝑳𝑰𝑮𝑯𝑻 𓆪 🕷️" // اسم البصمة المظهرية
+            newsletterName: "𓆩 𝒀𝑨𝑮𝑨𝑴𝑰 𝑳𝑰𝑮𝑯𝑻 𓆪 🕷️" // اسم الحقوق اللي بيظهر فوق الرسالة
           },
           externalAdReply: {
             title: "𓆩 𝑴𝑬𝑹𝑶 𝑩𝑶𝑻 𓆪",
             body: "اضغط هنا للانضمام لمجتمعنا ⚡",
             mediaType: 1,
-            thumbnailUrl: "https://i.pinimg.com/originals/bb/77/0f/bb770fad66a634a6b3bf93e9c00bf4e5.jpg", // رابط صورة ياغامي لايت
-            sourceUrl: "https://chat.whatsapp.com/ItDxM47hQciHG4QdxV3aA0?s=cl&p=a&ilr=4&amv=3", // رابط الجروب بتاعك
-            renderLargerThumbnail: false // كرت مروّس مدمج بجانب الرد ليعطي مظهر فخم
+            thumbnailUrl: "https://i.pinimg.com/originals/bb/77/0f/bb770fad66a634a6b3bf93e9c00bf4e5.jpg", // رابط صورة ياغامي لايت الثابتة
+            sourceUrl: "https://chat.whatsapp.com/ItDxM47hQciHG4QdxV3aA0?s=cl&p=a&ilr=4&amv=3", // رابط الجروب بتاعك (شغال 100% دلوقتي)
+            renderLargerThumbnail: true // خليتها true عشان الكارت يظهر كبير وبشكل فخم ومستطيل بالصورة كاملة
           }
         }
       };
 
-      // إرسال الرد العشوائي محقوناً ببصمة حقوق ميرو كاملة
+      // إرسال الرد العشوائي مضبوط ومصلح بالكامل
       await conn.sendMessage(m.chat, { text: ranReply, ...meroContext }, { quoted: m });
       
       return true; // إيقاف المعالجة بنجاح

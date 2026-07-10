@@ -1,7 +1,7 @@
-const gis = require('g-i-s');
-const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import gis from 'g-i-s';
+import { exec } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
@@ -22,7 +22,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     // خطوات شريط التحميل
     const steps = ['*◈◇◇*', '*◈◈◇*', '*◈◈◈*', '*◆◈◈*', '*◆◆◈*', '*◆◆◆*'];
     for (let i = 0; i < steps.length; i++) {
-      await new Promise(r => setTimeout(r, 400)); // سرّعنا الوقت شوية لـ 400ms عشان ميبقاش بطيء
+      await new Promise(r => setTimeout(r, 400));
       await conn.sendMessage(m.chat, { 
         text: `*⋄┄┄┄┄┄┄┄〘جاري الصنع〙┄┄┄┄┄┄┄⋄*\n\n${steps[i]}`,
         edit: progressMsg.key
@@ -40,13 +40,13 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       const outputPath = path.join(process.cwd(), `temp-${Date.now()}.webp`);
 
       try {
-        // تحميل الصورة باستخدام دالة جلب الملفات المدمجة في البوت لضمان الاستقرار
+        // تحميل الصورة باستخدام الدالة المدمجة في بوتك
         const download = await conn.getFile(imageUrl);
         if (!download || !download.data) throw new Error("فشل تحميل الصورة");
         
         fs.writeFileSync(inputPath, download.data);
 
-        // تحويل الصورة إلى ملصق باستخدام ffmpeg
+        // تحويل الصورة إلى ملصق احترافي بأبعاد مربعة شفافة من الجوانب بدلاً من مطّها
         exec(`ffmpeg -i "${inputPath}" -vf "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=white@0" -c:v libwebp -preset default -quality 100 -compression_level 6 -qscale 50 "${outputPath}"`, async (error) => {
           if (error) {
             console.error('FFmpeg error:', error);
@@ -87,4 +87,5 @@ handler.help = ['ملصق'];
 handler.tags = ['الأدوات'];
 handler.command = /^(ملصق|شخصية)$/i;
 
-module.exports = handler;
+return handler;
+          

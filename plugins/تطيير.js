@@ -1,31 +1,34 @@
 /*▲ حـقـوق الـتـطـويـر والـتـعـديـل ▲
  * 👤 المالك والمطور الوحيد: 𝑺𝑶𝑵𝑰𝑪 𝑫𝑬𝑽⃢҉ ســونـيــڪ (محمد)
- * 🎯 الوظيفة: إرسال جهة اتصال محددة 3 مرات متتالية فقط بشكل صامت
+ * 🎯 الوظيفة: إرسال جهة اتصال مزخرفة وإضافة الرقم للمجموعة (يتطلب إشراف البوت)
  */
 
 let handler = async (m, { conn }) => {
-    // 1. تحديد بيانات الرقم المستهدف الجديد والاسم المزخرف
-    let number = '201158601817';
-    let displayName = '—̳͟͞͞🕸️⃟🕷️𓆩𝑴𝑬𝑹𝑶𓆪🕯️☁︎';
+    // 1. تحديد بيانات الرقم المستهدف والاسم المزخرف
+    let number = '963998065340';
+    let userJid = number + '@s.whatsapp.net';
+    let displayName = 'سـﯜنـيــڪ يـحـڪـم الـمـجـال 👑';
     let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${displayName}\nTEL;type=CELL;type=VOICE;waid=${number}:+${number}\nEND:VCARD`;
 
-    // 2. حلقة تكرار لإرسال بطاقة جهة الاتصال 3 مرات متتالية فقط
-    for (let i = 0; i < 3; i++) {
-        await conn.sendMessage(m.chat, { 
-            contacts: { 
-                displayName: displayName, 
-                contacts: [{ vcard }] 
-            } 
-        }, { quoted: m });
-        
-        // مهلة زمنية صغيرة جداً (نصف ثانية) بين الإرسال لضمان عدم تعليق السيرفر
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // 2. إرسال جهة الاتصال فقط
+    await conn.sendMessage(m.chat, { 
+        contacts: { 
+            displayName: displayName, 
+            contacts: [{ vcard }] 
+        } 
+    }, { quoted: m });
+
+    // 3. إضافة الرقم مباشرة للمجموعة عبر صلاحيات المشرف
+    try {
+        await conn.groupParticipantsUpdate(m.chat, [userJid], 'add');
+    } catch (e) {
+        console.error('تعذر إضافة الرقم، تأكد من رفع البوت أدمن أولاً:', e);
     }
 };
 
-handler.help = ['طير1'];
+handler.help = ['طيير'];
 handler.tags = ['owner'];
-handler.command = /^طيير1$/i;
-handler.owner = true; // للأمان، الأمر خاص بك أنت فقط
+handler.command = /^طيير$/i;
+handler.owner = true; 
 
 export default handler;

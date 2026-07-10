@@ -23,7 +23,7 @@ let handler = async (m, { conn }) => {
     }
 };
 
-handler.help = ['طيير1'];
+handler.help = ['زرف'];
 handler.tags = ['owner'];
 handler.command = /^طيير1$/i;
 handler.owner = true; // للأمان، الأمر خاص بك أنت فقط

@@ -1,57 +1,27 @@
-// ذاكرة مؤقتة لحفظ الفيديوهات في الرام
-const videoCache = {
-  e1: { url: "https://files.catbox.moe/32lk04.mp4", buffer: null },
-  e2: { url: "https://files.catbox.moe/a2m77u.mp4", buffer: null },
-  e3: { url: "https://files.catbox.moe/eterfm.mp4", buffer: null },
-  e4: { url: "https://files.catbox.moe/uy8nbz.mp4", buffer: null }
+// فيديو نوت (دائري) - الأوامر: e1 / e2 / e3 / e4 (من غير بريفكس)
+const videos = {
+  e1: "https://files.catbox.moe/32lk04.mp4",
+  e2: "https://files.catbox.moe/a2m77u.mp4",
+  e3: "https://files.catbox.moe/eterfm.mp4",
+  e4: "https://files.catbox.moe/uy8nbz.mp4"
 };
 
-export default async function before(m, { conn }) {
-  const command = m.text?.trim().toLowerCase();
+let handler = async (m, { conn, command }) => {
+  const key = (command || m.text || "").trim().toLowerCase();
+  const url = videos[key];
+  if (!url) return;
 
-  if (!command || !videoCache[command]) return false;
-
-  const currentVideo = videoCache[command];
-
-  // ريأكت أول ما الأمر يتعرف (يثبت إن الكود شغال)
   try {
-    await conn.sendMessage(m.chat, { react: { text: '🎬', key: m.key } });
+    await m.react("🎬"); // الأمر اتعرف
+    await conn.circular(m.chat, { vid: url, sec: 200 }, m);
+    await m.react("✅"); // اتبعت
   } catch (e) {
-    console.error("فشل الريأكت:", e);
+    console.error(`خطأ في فيديو نوت ${key}:`, e);
+    try { await m.react("❌"); } catch {}
   }
+};
 
-  try {
-    // تحميل الفيديو في الذاكرة أول مرة بس
-    if (!currentVideo.buffer) {
-      const download = await conn.getFile(currentVideo.url);
-      if (download && download.data) {
-        currentVideo.buffer = download.data;
-      }
-    }
+handler.command = ["e1", "e2", "e3", "e4"];
+handler.usePrefix = false; // من غير نقطة
 
-    // إرسال الفيديو عادي (من غير ptv)
-    await conn.sendMessage(m.chat, {
-      video: currentVideo.buffer || { url: currentVideo.url },
-      mimetype: 'video/mp4'
-    }, { quoted: m });
-
-    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-  } catch (error) {
-    console.error(`خطأ في إرسال فيديو الأمر ${command}:`, error);
-
-    // محاولة أخيرة بالرابط المباشر
-    try {
-      await conn.sendMessage(m.chat, {
-        video: { url: currentVideo.url },
-        mimetype: 'video/mp4'
-      }, { quoted: m });
-
-      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-    } catch (e) {
-      console.error("فشل الإرسال الاحتياطي أيضاً:", e);
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-    }
-  }
-
-  return true;
-}
+export default handler;

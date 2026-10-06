@@ -25,10 +25,9 @@ export default async function before(m, { conn, bot }) {
 
       // إرسال الفيديو كـ رسالة مرئية دائرية (PTV) فورا من الذاكرة
       await conn.sendMessage(m.chat, {
-        video: currentVideo.buffer || { url: currentVideo.url }, // لو الكاش فشل يبعت بالرابط علطول كحماية
-        mimetype: 'video/mp4',
-        ptv: true 
-      }, { quoted: m });
+  video: { url: currentVideo.url },
+  mimetype: 'video/mp4'
+}, { quoted: m })
 
       return true; 
     } catch (error) {
